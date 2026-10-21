@@ -1,0 +1,151 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar livro | Biblioteca Inteligente</title>
+
+    <style>
+        :root {
+            --fundo: #11120D;
+            --secundaria: #565449;
+            --detalhe: #D8CFBC;
+            --texto: #FFFBF4;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 650px;
+            margin: auto;
+        }
+
+        a { color: var(--detalhe); text-decoration: none; }
+
+        .voltar { display: inline-block; margin-bottom: 28px; }
+
+        h1 { color: var(--detalhe); }
+
+        .descricao { color: #c5c2b8; margin-bottom: 28px; }
+
+        .identificador {
+            color: var(--detalhe);
+            font-size: 14px;
+        }
+
+        .mensagem {
+            padding: 12px;
+            border-radius: 8px;
+            background: #492626;
+            color: #ffdddd;
+        }
+
+        form { display: flex; flex-direction: column; gap: 10px; }
+
+        label { margin-top: 12px; font-weight: bold; }
+
+        input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid var(--secundaria);
+            border-radius: 8px;
+            background: #1b1c16;
+            color: var(--texto);
+            font-size: 15px;
+        }
+
+        input:focus { outline: 1px solid var(--detalhe); }
+
+        button {
+            margin-top: 24px;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            background: var(--detalhe);
+            color: var(--fundo);
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover { opacity: 0.85; }
+
+        .cancelar {
+            display: inline-block;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+<main>
+    <a class="voltar" href="{{ url_for('listar_livros') }}">
+        ← Voltar ao acervo
+    </a>
+
+    <h1>Editar livro</h1>
+    <p class="descricao">
+        Atualize os dados da obra selecionada.
+    </p>
+
+    <p class="identificador">
+        Código do livro: #{{ livro.ID_LIVRO }}
+    </p>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensagem in mensagens %}
+            <p class="mensagem">{{ mensagem }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST"
+          action="{{ url_for('editar_livro',
+                             id_livro=livro.ID_LIVRO) }}">
+
+        <label for="titulo">Título *</label>
+        <input
+            type="text"
+            id="titulo"
+            name="titulo"
+            maxlength="45"
+            required
+            value="{{ livro.TITULO or '' }}"
+        >
+
+        <label for="ano_publicacao">Data de publicação *</label>
+        <input
+            type="date"
+            id="ano_publicacao"
+            name="ano_publicacao"
+            required
+            value="{{ livro.ANO_PUBLICACAO.strftime('%Y-%m-%d')
+                     if livro.ANO_PUBLICACAO else '' }}"
+        >
+
+        <label for="autor">Autor</label>
+        <input
+            type="text"
+            id="autor"
+            name="autor"
+            maxlength="45"
+            value="{{ livro.AUTOR or '' }}"
+        >
+
+        <button type="submit">Salvar alterações</button>
+    </form>
+
+    <a class="cancelar" href="{{ url_for('listar_livros') }}">
+        Cancelar e voltar ao acervo
+    </a>
+</main>
+</body>
+</html>

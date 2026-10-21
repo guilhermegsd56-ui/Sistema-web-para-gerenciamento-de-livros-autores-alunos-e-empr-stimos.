@@ -5,16 +5,16 @@ from flask import (
     request,
     redirect,
     url_for,
-    flash
+    flash,
+    abort
 )
 from database import conectar
-
+from datetime import date
 import os
 import secrets
 
 app = Flask(__name__)
 
-# Configure SECRET_KEY como variável de ambiente em produção.
 app.secret_key = os.environ.get(
     "SECRET_KEY",
     secrets.token_hex(32)
@@ -40,24 +40,23 @@ def listar_livros():
         busca = request.args.get("busca", "").strip()
 
         if busca:
-            consulta = """
+            cursor.execute(
+                """
                 SELECT ID_LIVRO, TITULO, ANO_PUBLICACAO, AUTOR
                 FROM livros
                 WHERE TITULO LIKE %s OR AUTOR LIKE %s
                 ORDER BY ID_LIVRO
-            """
-
-            termo = f"%{busca}%"
-            cursor.execute(consulta, (termo, termo))
-
+                """,
+                (f"%{busca}%", f"%{busca}%")
+            )
         else:
-            consulta = """
+            cursor.execute(
+                """
                 SELECT ID_LIVRO, TITULO, ANO_PUBLICACAO, AUTOR
                 FROM livros
                 ORDER BY ID_LIVRO
-            """
-
-            cursor.execute(consulta)
+                """
+            )
 
         livros = cursor.fetchall()
 
@@ -74,7 +73,6 @@ def listar_livros():
     finally:
         if cursor is not None:
             cursor.close()
-
         conexao.close()
 
 
@@ -90,10 +88,7 @@ def cadastrar_livro():
     autor = request.form.get("autor", "").strip()
 
     if not titulo or not ano_publicacao:
-        flash(
-            "Preencha o título e a data de publicação.",
-            "erro"
-        )
+        flash("Preencha o título e a data de publicação.", "erro")
         return render_template(
             "cadastrar_livro.html",
             titulo=titulo,
@@ -102,10 +97,18 @@ def cadastrar_livro():
         ), 400
 
     if len(titulo) > 45 or len(autor) > 45:
-        flash(
-            "O título e o autor devem ter no máximo 45 caracteres.",
-            "erro"
-        )
+        flash("Título e autor devem ter no máximo 45 caracteres.", "erro")
+        return render_template(
+            "cadastrar_livro.html",
+            titulo=titulo,
+            ano_publicacao=ano_publicacao,
+            autor=autor
+        ), 400
+
+    try:
+        date.fromisoformat(ano_publicacao)
+    except ValueError:
+        flash("Informe uma data de publicação válida.", "erro")
         return render_template(
             "cadastrar_livro.html",
             titulo=titulo,
@@ -128,27 +131,18 @@ def cadastrar_livro():
             INSERT INTO livros (TITULO, ANO_PUBLICACAO, AUTOR)
             VALUES (%s, %s, %s)
             """,
-            (
-                titulo,
-                ano_publicacao,
-                autor or None
-            )
+            (titulo, ano_publicacao, autor or None)
         )
 
         conexao.commit()
-
         flash("Livro cadastrado com sucesso!", "sucesso")
+
         return redirect(url_for("listar_livros"))
 
     except Exception:
         conexao.rollback()
         app.logger.exception("Erro ao cadastrar o livro.")
-
-        flash(
-            "Não foi possível cadastrar o livro. "
-            "Confira os dados e tente novamente.",
-            "erro"
-        )
+        flash("Não foi possível cadastrar o livro.", "erro")
 
         return render_template(
             "cadastrar_livro.html",
@@ -160,7 +154,111 @@ def cadastrar_livro():
     finally:
         if cursor is not None:
             cursor.close()
+        conexao.close()
 
+
+@app.route("/livros/editar/<int:id_livro>", methods=["GET", "POST"])
+def editar_livro(id_livro):
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT ID_LIVRO, TITULO, ANO_PUBLICACAO, AUTOR
+            FROM livros
+            WHERE ID_LIVRO = %s
+            """,
+            (id_livro,)
+        )
+
+        livro = cursor.fetchone()
+
+        if livro is None:
+            abort(404)
+
+        if request.method == "GET":
+            return render_template("editar_livro.html", livro=livro)
+
+        titulo = request.form.get("titulo", "").strip()
+        ano_publicacao = request.form.get(
+            "ano_publicacao", ""
+        ).strip()
+        autor = request.form.get("autor", "").strip()
+
+        if not titulo or not ano_publicacao:
+            flash("Preencha o título e a data de publicação.", "erro")
+            livro.update({
+                "TITULO": titulo,
+                "AUTOR": autor,
+                "ANO_PUBLICACAO": ano_publicacao
+            })
+
+            return render_template(
+                "editar_livro.html",
+                livro=livro
+            ), 400
+
+        if len(titulo) > 45 or len(autor) > 45:
+            flash("Título e autor devem ter no máximo 45 caracteres.", "erro")
+            livro.update({
+                "TITULO": titulo,
+                "AUTOR": autor,
+                "ANO_PUBLICACAO": ano_publicacao
+            })
+
+            return render_template(
+                "editar_livro.html",
+                livro=livro
+            ), 400
+
+        try:
+            date.fromisoformat(ano_publicacao)
+        except ValueError:
+            flash("Informe uma data de publicação válida.", "erro")
+            livro.update({
+                "TITULO": titulo,
+                "AUTOR": autor,
+                "ANO_PUBLICACAO": ano_publicacao
+            })
+
+            return render_template(
+                "editar_livro.html",
+                livro=livro
+            ), 400
+
+        cursor.execute(
+            """
+            UPDATE livros
+            SET TITULO = %s,
+                ANO_PUBLICACAO = %s,
+                AUTOR = %s
+            WHERE ID_LIVRO = %s
+            """,
+            (titulo, ano_publicacao, autor or None, id_livro)
+        )
+
+        conexao.commit()
+        flash("Livro atualizado com sucesso!", "sucesso")
+
+        return redirect(url_for("listar_livros"))
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro ao editar o livro.")
+        flash("Não foi possível atualizar o livro.", "erro")
+
+        return redirect(url_for("listar_livros"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
         conexao.close()
 
 

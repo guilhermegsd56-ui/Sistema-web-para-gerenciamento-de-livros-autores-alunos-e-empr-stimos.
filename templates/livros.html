@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Livros | Biblioteca Inteligente</title>
 
     <style>
@@ -15,9 +14,7 @@
             --texto: #FFFBF4;
         }
 
-        * {
-            box-sizing: border-box;
-        }
+        * { box-sizing: border-box; }
 
         body {
             margin: 0;
@@ -27,30 +24,15 @@
             font-family: Arial, sans-serif;
         }
 
-        main {
-            max-width: 1000px;
-            margin: auto;
-        }
+        main { max-width: 1100px; margin: auto; }
 
-        a {
-            color: var(--detalhe);
-            text-decoration: none;
-        }
+        a { color: var(--detalhe); text-decoration: none; }
 
-        .voltar {
-            display: inline-block;
-            margin-bottom: 24px;
-        }
+        .voltar { display: inline-block; margin-bottom: 24px; }
 
-        h1 {
-            color: var(--detalhe);
-            margin-bottom: 8px;
-        }
+        h1 { color: var(--detalhe); margin-bottom: 8px; }
 
-        .descricao {
-            color: #c5c2b8;
-            margin-bottom: 24px;
-        }
+        .descricao, .resultado { color: #c5c2b8; }
 
         .mensagem {
             padding: 12px 16px;
@@ -58,50 +40,12 @@
             margin: 16px 0;
         }
 
-        .sucesso {
-            background: #243c2b;
-            color: #d8f5dc;
-        }
+        .sucesso { background: #243c2b; color: #d8f5dc; }
+        .erro { background: #492626; color: #ffdddd; }
 
-        .erro {
-            background: #492626;
-            color: #ffdddd;
-        }
-
-        .botao-cadastrar {
+        .botao, .pesquisa button {
             display: inline-block;
-            margin-bottom: 24px;
-            padding: 13px 18px;
-            border-radius: 8px;
-            background: var(--detalhe);
-            color: var(--fundo);
-            font-weight: bold;
-        }
-
-        .botao-cadastrar:hover {
-            opacity: 0.85;
-        }
-
-        .pesquisa {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 20px;
-        }
-
-        .pesquisa input {
-            flex: 1;
-            min-width: 200px;
-            padding: 14px;
-            border: 1px solid var(--secundaria);
-            border-radius: 8px;
-            background: #1b1c16;
-            color: var(--texto);
-            font-size: 15px;
-        }
-
-        .pesquisa button {
-            padding: 14px 22px;
+            padding: 12px 17px;
             border: none;
             border-radius: 8px;
             background: var(--detalhe);
@@ -110,16 +54,26 @@
             cursor: pointer;
         }
 
-        .limpar {
-            display: inline-flex;
-            align-items: center;
-            padding: 0 8px;
+        .botao-cadastrar { margin: 16px 0 24px; }
+
+        .pesquisa {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
-        .resultado {
-            color: #c5c2b8;
-            margin-bottom: 16px;
+        .pesquisa input {
+            flex: 1;
+            min-width: 200px;
+            padding: 13px;
+            border: 1px solid var(--secundaria);
+            border-radius: 8px;
+            background: #1b1c16;
+            color: var(--texto);
         }
+
+        .limpar { display: inline-flex; align-items: center; }
 
         .tabela-container {
             overflow-x: auto;
@@ -134,126 +88,129 @@
         }
 
         th, td {
-            padding: 16px;
+            padding: 15px;
             text-align: left;
             border-bottom: 1px solid var(--secundaria);
         }
 
-        th {
-            background: var(--secundaria);
-            color: var(--texto);
+        th { background: var(--secundaria); }
+        tr:last-child td { border-bottom: none; }
+
+        .botao-editar {
+            display: inline-block;
+            padding: 8px 12px;
+            border: 1px solid var(--detalhe);
+            border-radius: 7px;
+            color: var(--detalhe);
         }
 
-        tr:last-child td {
-            border-bottom: none;
+        .botao-editar:hover {
+            background: var(--detalhe);
+            color: var(--fundo);
         }
 
         .vazio {
             padding: 24px;
-            color: var(--detalhe);
             text-align: center;
+            color: var(--detalhe);
         }
 
         @media (max-width: 600px) {
-            body {
-                padding: 24px 14px;
-            }
-
-            .pesquisa button {
-                flex: 1;
-            }
+            body { padding: 24px 14px; }
         }
     </style>
 </head>
 
 <body>
-    <main>
-        <a class="voltar" href="{{ url_for('inicio') }}">
-            ← Voltar ao início
-        </a>
+<main>
+    <a class="voltar" href="{{ url_for('inicio') }}">← Voltar ao início</a>
 
-        <h1>Acervo de livros</h1>
+    <h1>Acervo de livros</h1>
+    <p class="descricao">
+        Consulte, pesquise, cadastre e edite os livros da biblioteca.
+    </p>
 
-        <p class="descricao">
-            Consulte, pesquise e cadastre livros na Biblioteca Inteligente.
-        </p>
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensagem in mensagens %}
+            <p class="mensagem {{ categoria }}">{{ mensagem }}</p>
+        {% endfor %}
+    {% endwith %}
 
-        {% with mensagens = get_flashed_messages(with_categories=true) %}
-            {% for categoria, mensagem in mensagens %}
-                <p class="mensagem {{ categoria }}">{{ mensagem }}</p>
-            {% endfor %}
-        {% endwith %}
+    <a class="botao botao-cadastrar"
+       href="{{ url_for('cadastrar_livro') }}">
+        + Cadastrar livro
+    </a>
 
-        <a class="botao-cadastrar"
-           href="{{ url_for('cadastrar_livro') }}">
-            + Cadastrar livro
-        </a>
+    <form class="pesquisa" method="GET"
+          action="{{ url_for('listar_livros') }}">
+        <input
+            type="search"
+            name="busca"
+            placeholder="Pesquisar por título ou autor..."
+            value="{{ busca }}"
+            aria-label="Pesquisar por título ou autor"
+        >
+        <button type="submit">Pesquisar</button>
 
-        <form class="pesquisa" method="GET"
-              action="{{ url_for('listar_livros') }}">
+        {% if busca %}
+            <a class="limpar" href="{{ url_for('listar_livros') }}">
+                Limpar busca
+            </a>
+        {% endif %}
+    </form>
 
-            <input
-                type="search"
-                name="busca"
-                placeholder="Digite o título ou o autor..."
-                value="{{ busca }}"
-                aria-label="Pesquisar por título ou autor"
-            >
+    <p class="resultado">
+        {% if busca %}
+            {{ livros|length }} resultado(s) para "{{ busca }}".
+        {% else %}
+            {{ livros|length }} livro(s) cadastrado(s).
+        {% endif %}
+    </p>
 
-            <button type="submit">Pesquisar</button>
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Título</th>
+                    <th>Data de publicação</th>
+                    <th>Autor</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
 
-            {% if busca %}
-                <a class="limpar"
-                   href="{{ url_for('listar_livros') }}">
-                    Limpar busca
-                </a>
-            {% endif %}
-        </form>
-
-        <p class="resultado">
-            {% if busca %}
-                {{ livros|length }} resultado(s) para "{{ busca }}".
-            {% else %}
-                {{ livros|length }} livro(s) cadastrado(s).
-            {% endif %}
-        </p>
-
-        <div class="tabela-container">
-            <table>
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Título</th>
-                        <th>Data de publicação</th>
-                        <th>Autor</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    {% for livro in livros %}
-                    <tr>
-                        <td>{{ livro.ID_LIVRO }}</td>
-                        <td>{{ livro.TITULO }}</td>
-                        <td>
-                            {{ livro.ANO_PUBLICACAO.strftime('%d/%m/%Y')
-                               if livro.ANO_PUBLICACAO else '—' }}
-                        </td>
-                        <td>{{ livro.AUTOR or 'Não informado' }}</td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="4" class="vazio">
-                            {% if busca %}
-                                Nenhum livro encontrado para essa pesquisa.
-                            {% else %}
-                                Nenhum livro cadastrado.
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </main>
+            <tbody>
+                {% for livro in livros %}
+                <tr>
+                    <td>{{ livro.ID_LIVRO }}</td>
+                    <td>{{ livro.TITULO }}</td>
+                    <td>
+                        {{ livro.ANO_PUBLICACAO.strftime('%d/%m/%Y')
+                           if livro.ANO_PUBLICACAO else '—' }}
+                    </td>
+                    <td>{{ livro.AUTOR or 'Não informado' }}</td>
+                    <td>
+                        <a class="botao-editar"
+                           href="{{ url_for('editar_livro',
+                                            id_livro=livro.ID_LIVRO) }}">
+                            Editar
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="vazio">
+                        {% if busca %}
+                            Nenhum livro encontrado para essa pesquisa.
+                        {% else %}
+                            Nenhum livro cadastrado.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
 </body>
 </html>
