@@ -10,6 +10,10 @@
     --branco: #FFFBF4;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     margin: 0;
     min-height: 100vh;
@@ -22,25 +26,45 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 24px;
     padding: 24px 8%;
     background-color: var(--preto);
     border-bottom: 1px solid var(--cinza);
 }
 
-header h1 {
-    margin: 0;
-    font-size: 24px;
-    letter-spacing: 0.5px;
+.logo {
+    color: var(--branco);
+    font-size: 22px;
+    font-weight: bold;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
-header h1 span {
+.logo span {
     color: var(--bege);
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+}
+
+nav a {
+    color: var(--bege);
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+nav a:hover {
+    color: var(--branco);
 }
 
 main {
     max-width: 1100px;
     margin: 0 auto;
-    padding: 100px 24px;
+    padding: 75px 24px;
     text-align: center;
 }
 
@@ -50,7 +74,7 @@ main {
     border: 1px solid var(--cinza);
     border-radius: 30px;
     color: var(--bege);
-    font-size: 13px;
+    font-size: 12px;
     letter-spacing: 1px;
 }
 
@@ -65,7 +89,7 @@ main h2 span {
     color: var(--bege);
 }
 
-main p {
+main > p {
     max-width: 600px;
     margin: 0 auto;
     color: var(--bege);
@@ -77,7 +101,7 @@ main p {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    margin-top: 32px;
+    margin-top: 28px;
     padding: 14px 20px;
     background-color: var(--cinza);
     border: 1px solid #777466;
@@ -93,6 +117,58 @@ main p {
     background-color: var(--bege);
 }
 
+.atalhos {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+    margin-top: 65px;
+    text-align: left;
+}
+
+.atalho {
+    position: relative;
+    min-height: 190px;
+    padding: 24px;
+    background-color: #1A1B15;
+    border: 1px solid var(--cinza);
+    border-radius: 12px;
+    color: var(--branco);
+    text-decoration: none;
+    transition: background-color 0.2s, border-color 0.2s,
+                transform 0.2s;
+}
+
+.atalho:hover {
+    background-color: #25251E;
+    border-color: var(--bege);
+    transform: translateY(-4px);
+}
+
+.numero {
+    color: var(--bege);
+    font-size: 12px;
+}
+
+.atalho h3 {
+    margin: 28px 0 10px;
+    font-size: 20px;
+}
+
+.atalho p {
+    margin: 0;
+    color: var(--bege);
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.seta {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    color: var(--bege);
+    font-size: 20px;
+}
+
 footer {
     padding: 24px;
     border-top: 1px solid var(--cinza);
@@ -101,16 +177,32 @@ footer {
     font-size: 13px;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 900px) {
+    header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .atalhos {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 500px) {
     header {
         padding: 22px 6%;
     }
 
-    header h1 {
-        font-size: 20px;
+    nav {
+        gap: 16px;
     }
 
     main {
-        padding: 75px 20px;
+        padding: 55px 18px;
+    }
+
+    .atalhos {
+        grid-template-columns: 1fr;
+        margin-top: 45px;
     }
 }
