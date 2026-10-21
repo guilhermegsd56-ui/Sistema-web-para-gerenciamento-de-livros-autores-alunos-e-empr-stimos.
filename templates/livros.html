@@ -52,6 +52,55 @@
             margin-bottom: 30px;
         }
 
+        .pesquisa {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .pesquisa input {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px;
+            border: 1px solid var(--secundaria);
+            border-radius: 8px;
+            background: #1b1c16;
+            color: var(--texto);
+            font-size: 15px;
+            outline: none;
+        }
+
+        .pesquisa input:focus {
+            border-color: var(--detalhe);
+        }
+
+        .pesquisa button {
+            padding: 14px 22px;
+            border: none;
+            border-radius: 8px;
+            background: var(--detalhe);
+            color: var(--fundo);
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .pesquisa button:hover {
+            opacity: 0.85;
+        }
+
+        .limpar {
+            display: inline-flex;
+            align-items: center;
+            padding: 0 8px;
+        }
+
+        .resultado {
+            color: #c5c2b8;
+            margin-bottom: 16px;
+        }
+
         .tabela-container {
             overflow-x: auto;
             border: 1px solid var(--secundaria);
@@ -82,6 +131,17 @@
         .vazio {
             padding: 24px;
             color: var(--detalhe);
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 24px 14px;
+            }
+
+            .pesquisa button {
+                flex: 1;
+            }
         }
     </style>
 </head>
@@ -95,7 +155,36 @@
         <h1>Acervo de livros</h1>
 
         <p class="descricao">
-            Consulte os livros cadastrados na Biblioteca Inteligente.
+            Consulte e pesquise os livros cadastrados na Biblioteca Inteligente.
+        </p>
+
+        <form class="pesquisa" method="GET"
+              action="{{ url_for('listar_livros') }}">
+
+            <input
+                type="search"
+                name="busca"
+                placeholder="Digite o título ou o autor..."
+                value="{{ busca }}"
+                aria-label="Pesquisar por título ou autor"
+            >
+
+            <button type="submit">Pesquisar</button>
+
+            {% if busca %}
+                <a class="limpar"
+                   href="{{ url_for('listar_livros') }}">
+                    Limpar busca
+                </a>
+            {% endif %}
+        </form>
+
+        <p class="resultado">
+            {% if busca %}
+                {{ livros|length }} resultado(s) para "{{ busca }}".
+            {% else %}
+                {{ livros|length }} livro(s) cadastrado(s).
+            {% endif %}
         </p>
 
         <div class="tabela-container">
@@ -123,7 +212,11 @@
                     {% else %}
                     <tr>
                         <td colspan="4" class="vazio">
-                            Nenhum livro cadastrado.
+                            {% if busca %}
+                                Nenhum livro encontrado para essa pesquisa.
+                            {% else %}
+                                Nenhum livro cadastrado.
+                            {% endif %}
                         </td>
                     </tr>
                     {% endfor %}

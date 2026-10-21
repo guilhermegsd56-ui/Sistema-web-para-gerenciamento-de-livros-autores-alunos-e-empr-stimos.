@@ -1,5 +1,5 @@
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from database import conectar
 
 app = Flask(__name__)
@@ -22,15 +22,35 @@ def listar_livros():
     try:
         cursor = conexao.cursor(dictionary=True)
 
-        cursor.execute("""
-            SELECT ID_LIVRO, TITULO, ANO_PUBLICACAO, AUTOR
-            FROM livros
-            ORDER BY ID_LIVRO
-        """)
+        busca = request.args.get("busca", "").strip()
+
+        if busca:
+            consulta = """
+                SELECT ID_LIVRO, TITULO, ANO_PUBLICACAO, AUTOR
+                FROM livros
+                WHERE TITULO LIKE %s OR AUTOR LIKE %s
+                ORDER BY ID_LIVRO
+            """
+
+            termo = f"%{busca}%"
+            cursor.execute(consulta, (termo, termo))
+
+        else:
+            consulta = """
+                SELECT ID_LIVRO, TITULO, ANO_PUBLICACAO, AUTOR
+                FROM livros
+                ORDER BY ID_LIVRO
+            """
+
+            cursor.execute(consulta)
 
         livros = cursor.fetchall()
 
-        return render_template("livros.html", livros=livros)
+        return render_template(
+            "livros.html",
+            livros=livros,
+            busca=busca
+        )
 
     except Exception as erro:
         app.logger.error("Erro ao consultar livros: %s", erro)
