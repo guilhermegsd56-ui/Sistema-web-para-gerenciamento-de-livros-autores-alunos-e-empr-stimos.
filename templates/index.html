@@ -1,23 +1,24 @@
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Biblioteca Inteligente</title>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
     <header>
-        <a href="/" class="logo">
+        <a href="{{ url_for('inicio') }}" class="logo">
             Biblioteca <span>Inteligente.</span>
         </a>
 
         <nav aria-label="Navegação principal">
-            <a href="#livros">Livros</a>
+            <a href="{{ url_for('listar_livros') }}">Livros</a>
             <a href="#autores">Autores</a>
             <a href="#alunos">Alunos</a>
             <a href="#emprestimos">Empréstimos</a>
@@ -46,7 +47,8 @@
         </div>
 
         <section class="atalhos" aria-label="Áreas da biblioteca">
-            <a href="#livros" class="atalho" id="livros">
+
+            <a href="{{ url_for('listar_livros') }}" class="atalho">
                 <span class="numero">01</span>
                 <h3>Livros</h3>
                 <p>Explore o acervo da biblioteca.</p>
@@ -73,11 +75,11 @@
                 <p>Acompanhe retiradas e devoluções.</p>
                 <span class="seta">↗</span>
             </a>
+
         </section>
     </main>
 
     <footer>
-        Biblioteca Inteligente © 2026
     </footer>
 </body>
 </html>

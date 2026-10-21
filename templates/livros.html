@@ -1,0 +1,135 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Livros | Biblioteca Inteligente</title>
+
+    <style>
+        :root {
+            --fundo: #11120D;
+            --secundaria: #565449;
+            --detalhe: #D8CFBC;
+            --texto: #FFFBF4;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        a {
+            color: var(--detalhe);
+            text-decoration: none;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            color: var(--detalhe);
+            margin-bottom: 8px;
+        }
+
+        .descricao {
+            color: #c5c2b8;
+            margin-bottom: 30px;
+        }
+
+        .tabela-container {
+            overflow-x: auto;
+            border: 1px solid var(--secundaria);
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1b1c16;
+        }
+
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid var(--secundaria);
+        }
+
+        th {
+            background: var(--secundaria);
+            color: var(--texto);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .vazio {
+            padding: 24px;
+            color: var(--detalhe);
+        }
+    </style>
+</head>
+
+<body>
+    <main>
+        <a class="voltar" href="{{ url_for('inicio') }}">
+            ← Voltar ao início
+        </a>
+
+        <h1>Acervo de livros</h1>
+
+        <p class="descricao">
+            Consulte os livros cadastrados na Biblioteca Inteligente.
+        </p>
+
+        <div class="tabela-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Ano de publicação</th>
+                        <th>Autor</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for livro in livros %}
+                    <tr>
+                        <td>{{ livro.ID_LIVRO }}</td>
+                        <td>{{ livro.TITULO }}</td>
+                        <td>
+                            {{ livro.ANO_PUBLICACAO.strftime('%d/%m/%Y')
+                               if livro.ANO_PUBLICACAO else '—' }}
+                        </td>
+                        <td>{{ livro.AUTOR or 'Não informado' }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="vazio">
+                            Nenhum livro cadastrado.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+</body>
+</html>
