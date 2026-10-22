@@ -1,0 +1,184 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar autor | Biblioteca Inteligente</title>
+
+    <style>
+        :root {
+            --fundo: #11120D;
+            --secundaria: #565449;
+            --detalhe: #D8CFBC;
+            --texto: #FFFBF4;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: Arial, sans-serif;
+        }
+
+        main {
+            max-width: 650px;
+            margin: auto;
+        }
+
+        a {
+            color: var(--detalhe);
+            text-decoration: none;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            color: var(--detalhe);
+        }
+
+        .descricao {
+            color: #c5c2b8;
+            margin-bottom: 28px;
+        }
+
+        form {
+            display: grid;
+            gap: 18px;
+            padding: 24px;
+            border: 1px solid var(--secundaria);
+            border-radius: 12px;
+            background: #1b1c16;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 13px;
+            border: 1px solid var(--secundaria);
+            border-radius: 8px;
+            background: var(--fundo);
+            color: var(--texto);
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .mensagem {
+            padding: 12px 16px;
+            border-radius: 8px;
+        }
+
+        .erro {
+            background: #492626;
+            color: #ffdddd;
+        }
+
+        .acoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 8px;
+            background: var(--detalhe);
+            color: var(--fundo);
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 24px 14px;
+            }
+
+            form {
+                padding: 18px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<main>
+    <a class="voltar" href="{{ url_for('listar_autores') }}">
+        ← Voltar aos autores
+    </a>
+
+    <h1>Editar autor</h1>
+
+    <p class="descricao">
+        Altere as informações do autor abaixo.
+    </p>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensagem in mensagens %}
+            <p class="mensagem {{ categoria }}">{{ mensagem }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST">
+        <div>
+            <label for="nome">Nome do autor</label>
+            <input
+                type="text"
+                id="nome"
+                name="nome"
+                maxlength="45"
+                value="{{ autor.NOME }}"
+                required
+            >
+        </div>
+
+        <div>
+            <label for="filosofia">Filosofia do autor</label>
+            <textarea
+                id="filosofia"
+                name="filosofia"
+                maxlength="100"
+                required
+            >{{ autor.FILOSOFIA_DO_AUTOR }}</textarea>
+        </div>
+
+        <div>
+            <label for="data_nascimento">Data de nascimento</label>
+            <input
+                type="date"
+                id="data_nascimento"
+                name="data_nascimento"
+                max="{{ hoje }}"
+                value="{{ autor.DATA_NASCIMENTO.strftime('%Y-%m-%d') if autor.DATA_NASCIMENTO and autor.DATA_NASCIMENTO.strftime is defined else autor.DATA_NASCIMENTO }}"
+                required
+            >
+        </div>
+
+        <div class="acoes">
+            <button type="submit">Salvar alterações</button>
+            <a href="{{ url_for('listar_autores') }}">Cancelar</a>
+        </div>
+    </form>
+</main>
+</body>
+</html>

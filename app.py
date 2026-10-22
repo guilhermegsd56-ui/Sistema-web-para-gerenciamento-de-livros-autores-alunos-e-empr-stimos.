@@ -489,5 +489,190 @@ def cadastrar_autor():
         conexao.close()
 
 
+# ==================================================
+# EDITAR AUTORES
+# ==================================================
+
+@app.route("/autores/editar/<int:id_autor>", methods=["GET", "POST"])
+def editar_autor(id_autor):
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT ID_AUTOR, NOME, FILOSOFIA_DO_AUTOR,
+                   DATA_NASCIMENTO
+            FROM autor
+            WHERE ID_AUTOR = %s
+            """,
+            (id_autor,)
+        )
+
+        autor = cursor.fetchone()
+
+        if autor is None:
+            abort(404)
+
+        hoje = date.today().isoformat()
+
+        if request.method == "GET":
+            return render_template(
+                "editar_autor.html",
+                autor=autor,
+                hoje=hoje
+            )
+
+        nome = request.form.get("nome", "").strip()
+        filosofia = request.form.get("filosofia", "").strip()
+        data_nascimento = request.form.get(
+            "data_nascimento", ""
+        ).strip()
+
+        dados = {
+            "ID_AUTOR": id_autor,
+            "NOME": nome,
+            "FILOSOFIA_DO_AUTOR": filosofia,
+            "DATA_NASCIMENTO": data_nascimento
+        }
+
+        if not nome or not filosofia or not data_nascimento:
+            flash("Preencha todos os campos.", "erro")
+            return render_template(
+                "editar_autor.html",
+                autor=dados,
+                hoje=hoje
+            ), 400
+
+        if len(nome) > 45:
+            flash("O nome deve ter no máximo 45 caracteres.", "erro")
+            return render_template(
+                "editar_autor.html",
+                autor=dados,
+                hoje=hoje
+            ), 400
+
+        if len(filosofia) > 100:
+            flash(
+                "A filosofia do autor deve ter no máximo 100 caracteres.",
+                "erro"
+            )
+            return render_template(
+                "editar_autor.html",
+                autor=dados,
+                hoje=hoje
+            ), 400
+
+        try:
+            nascimento = date.fromisoformat(data_nascimento)
+
+            if nascimento > date.today():
+                flash(
+                    "A data de nascimento não pode ser futura.",
+                    "erro"
+                )
+                return render_template(
+                    "editar_autor.html",
+                    autor=dados,
+                    hoje=hoje
+                ), 400
+
+        except ValueError:
+            flash("Informe uma data válida.", "erro")
+            return render_template(
+                "editar_autor.html",
+                autor=dados,
+                hoje=hoje
+            ), 400
+
+        cursor.execute(
+            """
+            UPDATE autor
+            SET NOME = %s,
+                FILOSOFIA_DO_AUTOR = %s,
+                DATA_NASCIMENTO = %s
+            WHERE ID_AUTOR = %s
+            """,
+            (nome, filosofia, nascimento, id_autor)
+        )
+
+        conexao.commit()
+        flash("Autor atualizado com sucesso!", "sucesso")
+
+        return redirect(url_for("listar_autores"))
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro ao editar o autor.")
+        flash("Não foi possível atualizar o autor.", "erro")
+        return redirect(url_for("listar_autores"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+
+# ==================================================
+# EXCLUIR AUTORES
+# ==================================================
+
+@app.route("/autores/excluir/<int:id_autor>", methods=["POST"])
+def excluir_autor(id_autor):
+    conexao = conectar()
+
+    if conexao is None:
+        flash("Não foi possível conectar ao banco de dados.", "erro")
+        return redirect(url_for("listar_autores"))
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            "DELETE FROM autor WHERE ID_AUTOR = %s",
+            (id_autor,)
+        )
+
+        if cursor.rowcount == 0:
+            conexao.rollback()
+            flash("O autor não foi encontrado.", "erro")
+        else:
+            conexao.commit()
+            flash("Autor excluído com sucesso!", "sucesso")
+
+    except Error as erro:
+        conexao.rollback()
+        app.logger.exception("Erro ao excluir o autor.")
+
+        if getattr(erro, "errno", None) == 1451:
+            flash(
+                "Este autor possui registros vinculados e não pode "
+                "ser excluído enquanto esses vínculos existirem.",
+                "erro"
+            )
+        else:
+            flash("Não foi possível excluir o autor.", "erro")
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro inesperado ao excluir o autor.")
+        flash("Ocorreu um erro inesperado ao excluir o autor.", "erro")
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+    return redirect(url_for("listar_autores"))
+
+
 if __name__ == "__main__":
     app.run(port=5001, debug=True)
