@@ -27,51 +27,114 @@ app.secret_key = os.environ.get(
 # ==================================================
 
 
+
+
 @app.route("/")
 def inicio():
     conexao = conectar()
 
+    indicadores_padrao = {
+        "total_livros": 0,
+        "total_autores": 0,
+        "total_alunos": 0,
+        "total_emprestimos": 0,
+        "emprestimos_pendentes": 0,
+        "emprestimos_devolvidos": 0,
+        "livros_disponiveis": 0,
+        "ultimos_emprestimos": []
+    }
+
     if conexao is None:
         flash("Não foi possível conectar ao banco de dados.", "erro")
-        return render_template(
-            "index.html",
-            total_livros=0,
-            total_autores=0,
-            total_alunos=0,
-            total_emprestimos=0,
-            emprestimos_pendentes=0,
-            emprestimos_devolvidos=0
-        )
+        return render_template("index.html", **indicadores_padrao)
 
     cursor = None
 
     try:
-        cursor = conexao.cursor()
+        cursor = conexao.cursor(dictionary=True)
 
-        cursor.execute("SELECT COUNT(*) FROM livros")
-        total_livros = cursor.fetchone()[0]
+        # 1. Total de livros cadastrados
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM livros
+        """)
+        total_livros = cursor.fetchone()["total"]
 
-        cursor.execute("SELECT COUNT(*) FROM autor")
-        total_autores = cursor.fetchone()[0]
+        # 2. Total de autores cadastrados
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM autor
+        """)
+        total_autores = cursor.fetchone()["total"]
 
-        cursor.execute("SELECT COUNT(*) FROM aluno")
-        total_alunos = cursor.fetchone()[0]
+        # 3. Total de alunos cadastrados
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM aluno
+        """)
+        total_alunos = cursor.fetchone()["total"]
 
-        cursor.execute("SELECT COUNT(*) FROM emprestrimo")
-        total_emprestimos = cursor.fetchone()[0]
+        # 4. Total de empréstimos registrados
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM emprestrimo
+        """)
+        total_emprestimos = cursor.fetchone()["total"]
 
-        cursor.execute(
-            "SELECT COUNT(*) FROM emprestrimo WHERE STATUS = %s",
-            ("PENDENTE",)
-        )
-        emprestimos_pendentes = cursor.fetchone()[0]
+        # 5. Quantidade de empréstimos pendentes
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM emprestrimo
+            WHERE UPPER(STATUS) = 'PENDENTE'
+        """)
+        emprestimos_pendentes = cursor.fetchone()["total"]
 
-        cursor.execute(
-            "SELECT COUNT(*) FROM emprestrimo WHERE STATUS = %s",
-            ("DEVOLVIDO",)
-        )
-        emprestimos_devolvidos = cursor.fetchone()[0]
+        # 6. Quantidade de empréstimos devolvidos
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM emprestrimo
+            WHERE UPPER(STATUS) = 'DEVOLVIDO'
+        """)
+        emprestimos_devolvidos = cursor.fetchone()["total"]
 
+        # 7. Livros disponíveis:
+        # livros que não possuem empréstimos pendentes associados.
+        cursor.execute("""
+            SELECT COUNT(*) AS total
+            FROM livros AS l
+            WHERE NOT EXISTS (
+                SELECT 1
+                FROM emprestrimo AS e
+                WHERE e.ID_LIVRO = l.ID_LIVRO
+                  AND UPPER(e.STATUS) = 'PENDENTE'
+            )
+        """)
+        livros_disponiveis = cursor.fetchone()["total"]
+
+        # 8. Os cinco empréstimos mais recentes.
+        # LEFT JOIN permite exibir os registros mesmo quando
+        # o aluno ou o livro não estiver associado corretamente.
+        cursor.execute("""
+            SELECT
+                e.ID_IMPRESTIMO,
+                e.DATA_EMPRESTIMO,
+                e.DATA_DEVOLUCAO,
+                e.STATUS,
+                a.NOME AS NOME_ALUNO,
+                l.TITULO AS TITULO_LIVRO
+            FROM emprestrimo AS e
+            LEFT JOIN aluno AS a
+                ON a.ID_ALUNO = e.ID_ALUNO
+            LEFT JOIN livros AS l
+                ON l.ID_LIVRO = e.ID_LIVRO
+            ORDER BY
+                e.DATA_EMPRESTIMO DESC,
+                e.ID_IMPRESTIMO DESC
+            LIMIT 5
+        """)
+        ultimos_emprestimos = cursor.fetchall()
+
+        # Envia todos os indicadores para o painel inicial.
         return render_template(
             "index.html",
             total_livros=total_livros,
@@ -79,28 +142,32 @@ def inicio():
             total_alunos=total_alunos,
             total_emprestimos=total_emprestimos,
             emprestimos_pendentes=emprestimos_pendentes,
-            emprestimos_devolvidos=emprestimos_devolvidos
+            emprestimos_devolvidos=emprestimos_devolvidos,
+            livros_disponiveis=livros_disponiveis,
+            ultimos_emprestimos=ultimos_emprestimos
         )
 
-    except Error as erro:
-        print(f"Erro ao carregar o painel: {erro}")
-        flash("Não foi possível carregar os indicadores.", "erro")
+    except Exception:
+        app.logger.exception(
+            "Erro ao carregar os indicadores do painel inicial."
+        )
+
+        flash(
+            "Não foi possível carregar os indicadores. "
+            "Verifique o banco de dados.",
+            "erro"
+        )
+
         return render_template(
             "index.html",
-            total_livros=0,
-            total_autores=0,
-            total_alunos=0,
-            total_emprestimos=0,
-            emprestimos_pendentes=0,
-            emprestimos_devolvidos=0
-        )
+            **indicadores_padrao
+        ), 500
 
     finally:
         if cursor is not None:
             cursor.close()
+
         conexao.close()
-
-
 
 # ==================================================
 # LIVROS
