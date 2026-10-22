@@ -1,269 +1,733 @@
 
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Livros | Biblioteca Inteligente</title>
+
+    <title>Acervo de livros | Biblioteca Inteligente</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='css/style.css') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap"
+          rel="stylesheet">
 
     <style>
         :root {
-            --fundo: #11120D;
-            --secundaria: #565449;
-            --detalhe: #D8CFBC;
-            --texto: #FFFBF4;
-            --excluir: #d96b6b;
+            --fundo: #F7F6EF;
+            --preto: #11120D;
+            --branco: #FFFFFF;
+            --texto-secundario: #77766D;
+            --borda: #E5E0D4;
+            --bege: #E9E5D9;
+            --painel-escuro: #11120D;
+            --erro: #A53F36;
+            --sucesso: #466B4C;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
 
         body {
             margin: 0;
-            padding: 40px 20px;
+            min-height: 100vh;
             background: var(--fundo);
-            color: var(--texto);
-            font-family: Arial, sans-serif;
+            color: var(--preto);
+            font-family: "DM Sans", Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
         }
 
-        main { max-width: 1100px; margin: auto; }
-
-        a { color: var(--detalhe); text-decoration: none; }
-
-        .voltar { display: inline-block; margin-bottom: 24px; }
-
-        h1 { color: var(--detalhe); margin-bottom: 8px; }
-
-        .descricao, .resultado { color: #c5c2b8; }
-
-        .mensagem {
-            padding: 12px 16px;
-            border-radius: 8px;
-            margin: 16px 0;
+        a {
+            color: inherit;
+            text-decoration: none;
         }
 
-        .sucesso { background: #243c2b; color: #d8f5dc; }
-        .erro { background: #492626; color: #ffdddd; }
-
-        .botao, .pesquisa button {
-            display: inline-block;
-            padding: 12px 17px;
-            border: none;
-            border-radius: 8px;
-            background: var(--detalhe);
-            color: var(--fundo);
-            font-weight: bold;
-            cursor: pointer;
+        button,
+        input {
+            font: inherit;
         }
 
-        .botao-cadastrar { margin: 16px 0 24px; }
+        button,
+        a {
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        .pesquisa {
+        /* CABEÇALHO */
+
+        .cabecalho-site {
             display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            padding: 24px 5%;
+            background: var(--fundo);
+            border-bottom: 1px solid var(--borda);
+        }
+
+        .logo-site {
+            flex-shrink: 0;
+            color: var(--preto);
+            font-size: 17px;
+            font-weight: 700;
+            letter-spacing: -0.7px;
+        }
+
+        .logo-site span {
+            font-family: "Playfair Display", Georgia, serif;
+            font-weight: 500;
+        }
+
+        .navegacao {
+            display: flex;
+            align-items: center;
             flex-wrap: wrap;
+            gap: 28px;
+        }
+
+        .navegacao a {
+            position: relative;
+            color: #55544C;
+            font-size: 13px;
+            transition: color .2s ease;
+        }
+
+        .navegacao a:hover,
+        .navegacao a.ativo {
+            color: var(--preto);
+        }
+
+        .navegacao a.ativo::after {
+            position: absolute;
+            right: 0;
+            bottom: -7px;
+            left: 0;
+            height: 1px;
+            background: var(--preto);
+            content: "";
+        }
+
+        /* CONTEÚDO PRINCIPAL */
+
+        .pagina-livros {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 64px 40px 80px;
+            text-align: left;
+        }
+
+        .identificador {
+            display: inline-block;
+            margin-bottom: 15px;
+            color: #706D61;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+        }
+
+        .cabecalho-livros {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            gap: 30px;
+            margin-bottom: 38px;
+        }
+
+        .cabecalho-livros h1 {
+            margin: 0;
+            color: var(--preto);
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: clamp(36px, 5vw, 52px);
+            font-weight: 400;
+            letter-spacing: -1.5px;
+            line-height: 1.15;
+        }
+
+        .descricao-livros {
+            max-width: 570px;
+            margin: 16px 0 0;
+            color: var(--texto-secundario);
+            font-size: 14px;
+            line-height: 1.9;
+        }
+
+        .botao-cadastrar {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             gap: 12px;
-            margin-bottom: 20px;
+            min-height: 48px;
+            padding: 0 21px;
+            border: 1px solid var(--preto);
+            border-radius: 30px;
+            background: var(--preto);
+            color: var(--branco);
+            font-size: 13px;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: background .2s ease, color .2s ease;
         }
 
-        .pesquisa input {
+        .botao-cadastrar:hover {
+            background: var(--fundo);
+            color: var(--preto);
+        }
+
+        .simbolo-mais {
+            font-size: 19px;
+            line-height: 1;
+        }
+
+        /* MENSAGENS DO FLASK */
+
+        .mensagem-livros {
+            margin: 0 0 20px;
+            padding: 14px 17px;
+            border: 1px solid var(--borda);
+            border-radius: 10px;
+            background: var(--branco);
+            color: var(--preto);
+        }
+
+        .mensagem-livros.sucesso {
+            border-color: #C8D8C7;
+            color: var(--sucesso);
+        }
+
+        .mensagem-livros.erro {
+            border-color: #E4C5C0;
+            color: var(--erro);
+        }
+
+        /* PAINEL DE LIVROS */
+
+        .painel-livros {
+            overflow: hidden;
+            border: 1px solid var(--borda);
+            border-radius: 17px;
+            background: var(--branco);
+        }
+
+        .painel-topo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 27px 28px;
+            border-bottom: 1px solid var(--borda);
+        }
+
+        .painel-topo h2 {
+            margin: 0;
+            color: var(--preto);
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: 23px;
+            font-weight: 500;
+        }
+
+        .painel-topo p {
+            margin: 7px 0 0;
+            color: var(--texto-secundario);
+            font-size: 13px;
+        }
+
+        /* PESQUISA */
+
+        .pesquisa-livros {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 22px 28px;
+            border-bottom: 1px solid var(--borda);
+        }
+
+        .campo-pesquisa {
+            position: relative;
             flex: 1;
-            min-width: 200px;
-            padding: 13px;
-            border: 1px solid var(--secundaria);
-            border-radius: 8px;
-            background: #1b1c16;
-            color: var(--texto);
+            min-width: 0;
         }
 
-        .limpar { display: inline-flex; align-items: center; }
+        .campo-pesquisa input {
+            width: 100%;
+            min-height: 47px;
+            padding: 0 16px;
+            border: 1px solid var(--borda);
+            border-radius: 9px;
+            outline: none;
+            background: var(--fundo);
+            color: var(--preto);
+            transition: border-color .2s ease,
+                        box-shadow .2s ease;
+        }
+
+        .campo-pesquisa input::placeholder {
+            color: #929086;
+        }
+
+        .campo-pesquisa input:focus {
+            border-color: #A6A18F;
+            box-shadow: 0 0 0 3px rgba(166, 161, 143, .12);
+        }
+
+        .botao-pesquisar {
+            min-height: 47px;
+            padding: 0 22px;
+            border: 1px solid var(--preto);
+            border-radius: 9px;
+            background: var(--preto);
+            color: var(--branco);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s ease, color .2s ease;
+        }
+
+        .botao-pesquisar:hover {
+            background: #33332D;
+        }
+
+        .limpar-pesquisa {
+            color: var(--texto-secundario);
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .limpar-pesquisa:hover {
+            color: var(--preto);
+        }
+
+        /* CONTAGEM */
+
+        .contagem-livros {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 0;
+            padding: 19px 28px;
+            color: var(--texto-secundario);
+            font-size: 12px;
+        }
+
+        .contagem-livros strong {
+            color: var(--preto);
+            font-weight: 700;
+        }
+
+        /* TABELA */
 
         .tabela-container {
+            width: 100%;
             overflow-x: auto;
-            border: 1px solid var(--secundaria);
-            border-radius: 12px;
         }
 
-        table {
+        .tabela-livros {
             width: 100%;
             border-collapse: collapse;
-            background: #1b1c16;
-        }
-
-        th, td {
-            padding: 15px;
             text-align: left;
-            border-bottom: 1px solid var(--secundaria);
+            white-space: nowrap;
         }
 
-        th { background: var(--secundaria); }
-        tr:last-child td { border-bottom: none; }
+        .tabela-livros thead {
+            background: #F0EFE8;
+        }
 
-        .acoes {
+        .tabela-livros th {
+            padding: 17px 24px;
+            color: #65645B;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .tabela-livros td {
+            padding: 19px 24px;
+            border-bottom: 1px solid #EEECE5;
+            color: #55544C;
+            font-size: 13px;
+        }
+
+        .tabela-livros tbody tr {
+            transition: background .2s ease;
+        }
+
+        .tabela-livros tbody tr:hover {
+            background: #FAF9F5;
+        }
+
+        .tabela-livros tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .id-livro {
+            color: #8A887E !important;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .titulo-livro {
+            color: var(--preto) !important;
+            font-weight: 600;
+        }
+
+        .autor-livro {
+            color: #77766D !important;
+        }
+
+        /* AÇÕES */
+
+        .acoes-livro {
             display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
             align-items: center;
+            gap: 8px;
+        }
+
+        .botao-editar,
+        .botao-excluir {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 34px;
+            padding: 0 12px;
+            border: 1px solid var(--borda);
+            border-radius: 7px;
+            background: transparent;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background .2s ease,
+                        border-color .2s ease,
+                        color .2s ease;
         }
 
         .botao-editar {
-            display: inline-block;
-            padding: 8px 12px;
-            border: 1px solid var(--detalhe);
-            border-radius: 7px;
-            color: var(--detalhe);
-            font: inherit;
-            cursor: pointer;
+            color: var(--preto);
         }
 
         .botao-editar:hover {
-            background: var(--detalhe);
-            color: var(--fundo);
+            border-color: var(--preto);
+            background: var(--preto);
+            color: var(--branco);
         }
 
-        .form-excluir { margin: 0; }
+        .form-excluir {
+            margin: 0;
+        }
 
         .botao-excluir {
-            display: inline-block;
-            padding: 8px 12px;
-            border: 1px solid var(--excluir);
-            border-radius: 7px;
-            background: transparent;
-            color: var(--excluir);
-            font: inherit;
-            cursor: pointer;
+            border-color: #E6D2CD;
+            color: var(--erro);
         }
 
         .botao-excluir:hover {
-            background: var(--excluir);
-            color: var(--fundo);
+            border-color: var(--erro);
+            background: var(--erro);
+            color: var(--branco);
         }
 
-        .vazio {
-            padding: 24px;
+        /* ESTADO VAZIO */
+
+        .livros-vazios {
+            padding: 58px 20px !important;
+            color: var(--texto-secundario) !important;
             text-align: center;
-            color: var(--detalhe);
+            white-space: normal;
+        }
+
+        .livros-vazios strong {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--preto);
+            font-family: "Playfair Display", Georgia, serif;
+            font-size: 21px;
+            font-weight: 500;
+        }
+
+        /* ACESSIBILIDADE */
+
+        a:focus-visible,
+        button:focus-visible,
+        input:focus-visible {
+            outline: 2px solid #8B8778;
+            outline-offset: 3px;
+        }
+
+        /* RESPONSIVIDADE */
+
+        @media (max-width: 900px) {
+            .cabecalho-site {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 18px;
+                padding: 22px 5%;
+            }
+
+            .navegacao {
+                gap: 20px;
+            }
+
+            .pagina-livros {
+                padding: 45px 25px 60px;
+            }
+
+            .cabecalho-livros {
+                align-items: flex-start;
+                flex-direction: column;
+            }
         }
 
         @media (max-width: 600px) {
-            body { padding: 24px 14px; }
+            .cabecalho-site {
+                padding: 20px;
+            }
+
+            .navegacao {
+                gap: 13px 18px;
+            }
+
+            .navegacao a {
+                font-size: 12px;
+            }
+
+            .pagina-livros {
+                padding: 35px 16px 45px;
+            }
+
+            .cabecalho-livros h1 {
+                font-size: 37px;
+            }
+
+            .painel-topo {
+                padding: 22px 18px;
+            }
+
+            .pesquisa-livros {
+                flex-wrap: wrap;
+                padding: 17px;
+            }
+
+            .campo-pesquisa {
+                flex-basis: 100%;
+            }
+
+            .botao-pesquisar {
+                flex: 1;
+            }
+
+            .contagem-livros {
+                padding: 17px;
+            }
+
+            .tabela-livros th,
+            .tabela-livros td {
+                padding: 15px 16px;
+            }
+
+            .acoes-livro {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .botao-cadastrar {
+                min-height: 45px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
         }
     </style>
 </head>
 
 <body>
-<main>
-    <a class="voltar" href="{{ url_for('inicio') }}">
-        ← Voltar ao início
+
+<header class="cabecalho-site">
+    <a class="logo-site" href="{{ url_for('inicio') }}">
+        BIBLIOTECA <span>INTELIGENTE</span>
     </a>
 
-    <h1>Acervo de livros</h1>
-    <p class="descricao">
-        Consulte, pesquise, cadastre, edite e exclua os livros da biblioteca.
-    </p>
+    <nav class="navegacao" aria-label="Navegação principal">
+        <a href="{{ url_for('inicio') }}">Início</a>
+        <a class="ativo" href="{{ url_for('listar_livros') }}">Livros</a>
+        <a href="{{ url_for('listar_autores') }}">Autores</a>
+        <a href="{{ url_for('listar_alunos') }}">Alunos</a>
+        <a href="{{ url_for('listar_emprestimos') }}">Empréstimos</a>
+    </nav>
+</header>
+
+<main class="pagina-livros">
+
+    <section class="cabecalho-livros">
+        <div>
+            <span class="identificador">Biblioteca · Acervo</span>
+
+            <h1>Acervo de livros</h1>
+
+            <p class="descricao-livros">
+                Descubra histórias, explore conhecimentos e mantenha
+                seu acervo organizado em um só lugar.
+            </p>
+        </div>
+
+        <a class="botao-cadastrar"
+           href="{{ url_for('cadastrar_livro') }}">
+            <span class="simbolo-mais" aria-hidden="true">+</span>
+            Cadastrar livro
+        </a>
+    </section>
 
     {% with mensagens = get_flashed_messages(with_categories=true) %}
         {% for categoria, mensagem in mensagens %}
-            <p class="mensagem {{ categoria }}">{{ mensagem }}</p>
+            <p class="mensagem-livros {{ categoria }}">
+                {{ mensagem }}
+            </p>
         {% endfor %}
     {% endwith %}
 
-    <a class="botao botao-cadastrar"
-       href="{{ url_for('cadastrar_livro') }}">
-        + Cadastrar livro
-    </a>
+    <section class="painel-livros">
 
-    <form class="pesquisa" method="GET"
-          action="{{ url_for('listar_livros') }}">
-        <input
-            type="search"
-            name="busca"
-            placeholder="Pesquisar por título ou autor..."
-            value="{{ busca }}"
-            aria-label="Pesquisar por título ou autor"
-        >
-        <button type="submit">Pesquisar</button>
+        <div class="painel-topo">
+            <div>
+                <h2>Livros cadastrados</h2>
+                <p>Consulte e gerencie os registros do acervo.</p>
+            </div>
+        </div>
 
-        {% if busca %}
-            <a class="limpar" href="{{ url_for('listar_livros') }}">
-                Limpar busca
-            </a>
-        {% endif %}
-    </form>
+        <form class="pesquisa-livros"
+              method="GET"
+              action="{{ url_for('listar_livros') }}">
 
-    <p class="resultado">
-        {% if busca %}
-            {{ livros|length }} resultado(s) para "{{ busca }}".
-        {% else %}
-            {{ livros|length }} livro(s) cadastrado(s).
-        {% endif %}
-    </p>
+            <div class="campo-pesquisa">
+                <input
+                    type="search"
+                    name="busca"
+                    placeholder="Pesquisar por título ou autor..."
+                    value="{{ busca }}"
+                    aria-label="Pesquisar por título ou autor">
+            </div>
 
-    <div class="tabela-container">
-        <table>
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Título</th>
-                    <th>Data de publicação</th>
-                    <th>Autor</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
+            <button class="botao-pesquisar" type="submit">
+                Pesquisar
+            </button>
 
-            <tbody>
-                {% for livro in livros %}
-                <tr>
-                    <td>{{ livro.ID_LIVRO }}</td>
-                    <td>{{ livro.TITULO }}</td>
-                    <td>
-                        {{ livro.ANO_PUBLICACAO.strftime('%d/%m/%Y')
-                           if livro.ANO_PUBLICACAO else '—' }}
-                    </td>
-                    <td>{{ livro.AUTOR or 'Não informado' }}</td>
-                    <td>
-                        <div class="acoes">
-                            <a class="botao-editar"
-                               href="{{ url_for(
-                                   'editar_livro',
-                                   id_livro=livro.ID_LIVRO
-                               ) }}">
-                                Editar
-                            </a>
+            {% if busca %}
+                <a class="limpar-pesquisa"
+                   href="{{ url_for('listar_livros') }}">
+                    Limpar busca
+                </a>
+            {% endif %}
+        </form>
 
-                            <form
-                                class="form-excluir"
-                                method="POST"
-                                action="{{ url_for(
-                                    'excluir_livro',
-                                    id_livro=livro.ID_LIVRO
-                                ) }}"
-                                onsubmit="return confirm(
-                                    'Tem certeza de que deseja excluir este livro? Esta ação não pode ser desfeita.'
-                                );"
-                            >
-                                <button
-                                    type="submit"
-                                    class="botao-excluir"
-                                >
-                                    Excluir
-                                </button>
-                            </form>
-                        </div>
-                    </td>
-                </tr>
-                {% else %}
-                <tr>
-                    <td colspan="5" class="vazio">
-                        {% if busca %}
-                            Nenhum livro encontrado para essa pesquisa.
-                        {% else %}
-                            Nenhum livro cadastrado.
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+        <p class="contagem-livros">
+            {% if busca %}
+                <span>
+                    <strong>{{ livros|length }}</strong>
+                    resultado(s) para "{{ busca }}".
+                </span>
+            {% else %}
+                <span>
+                    <strong>{{ livros|length }}</strong>
+                    livro(s) cadastrado(s).
+                </span>
+            {% endif %}
+        </p>
+
+        <div class="tabela-container">
+            <table class="tabela-livros">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Título</th>
+                        <th>Data de publicação</th>
+                        <th>Autor</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for livro in livros %}
+                        <tr>
+                            <td class="id-livro">
+                                {{ livro.ID_LIVRO }}
+                            </td>
+
+                            <td class="titulo-livro">
+                                {{ livro.TITULO }}
+                            </td>
+
+                            <td>
+                                {{ livro.ANO_PUBLICACAO.strftime('%d/%m/%Y')
+                                   if livro.ANO_PUBLICACAO else '—' }}
+                            </td>
+
+                            <td class="autor-livro">
+                                {{ livro.AUTOR or 'Não informado' }}
+                            </td>
+
+                            <td>
+                                <div class="acoes-livro">
+                                    <a
+                                        class="botao-editar"
+                                        href="{{ url_for(
+                                            'editar_livro',
+                                            id_livro=livro.ID_LIVRO
+                                        ) }}">
+                                        Editar
+                                    </a>
+
+                                    <form
+                                        class="form-excluir"
+                                        method="POST"
+                                        action="{{ url_for(
+                                            'excluir_livro',
+                                            id_livro=livro.ID_LIVRO
+                                        ) }}"
+                                        onsubmit="return confirm('Tem certeza de que deseja excluir este livro? Esta ação não pode ser desfeita.');">
+
+                                        <button
+                                            class="botao-excluir"
+                                            type="submit">
+                                            Excluir
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="livros-vazios">
+                                {% if busca %}
+                                    <strong>Nenhum resultado encontrado</strong>
+                                    Tente pesquisar usando outro título ou nome de autor.
+                                {% else %}
+                                    <strong>Seu acervo ainda está vazio</strong>
+                                    Cadastre o primeiro livro para começar.
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    </section>
+
 </main>
+
 </body>
 </html>
