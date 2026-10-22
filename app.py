@@ -921,5 +921,301 @@ def excluir_aluno(id_aluno):
 # EXECUTAR A APLICAÇÃO
 # ==================================================
 
+
+# ==================================================
+# EMPRÉSTIMOS
+# ==================================================
+
+@app.route("/emprestimos")
+def listar_emprestimos():
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+        busca = request.args.get("busca", "").strip()
+
+        consulta = """
+            SELECT
+                e.ID_IMPRESTIMO,
+                e.DATA_EMPRESTIMO,
+                e.DATA_DEVOLUCAO,
+                e.STATUS,
+                e.ID_ALUNO,
+                e.ID_LIVRO,
+                a.NOME AS NOME_ALUNO,
+                l.TITULO AS TITULO_LIVRO
+            FROM emprestrimo e
+            LEFT JOIN aluno a ON a.ID_ALUNO = e.ID_ALUNO
+            LEFT JOIN livros l ON l.ID_LIVRO = e.ID_LIVRO
+        """
+
+        parametros = ()
+
+        if busca:
+            consulta += """
+                WHERE a.NOME LIKE %s
+                   OR l.TITULO LIKE %s
+                   OR e.STATUS LIKE %s
+            """
+            parametros = (
+                f"%{busca}%",
+                f"%{busca}%",
+                f"%{busca}%"
+            )
+
+        consulta += " ORDER BY e.ID_IMPRESTIMO DESC"
+
+        cursor.execute(consulta, parametros)
+        emprestimos = cursor.fetchall()
+
+        return render_template(
+            "emprestimos.html",
+            emprestimos=emprestimos,
+            busca=busca
+        )
+
+    except Exception:
+        app.logger.exception("Erro ao consultar empréstimos.")
+        return "Ocorreu um erro ao consultar os empréstimos.", 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+
+@app.route("/emprestimos/cadastrar", methods=["GET", "POST"])
+def cadastrar_emprestimo():
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+
+        cursor.execute(
+            "SELECT ID_ALUNO, NOME FROM aluno ORDER BY NOME"
+        )
+        alunos = cursor.fetchall()
+
+        cursor.execute(
+            "SELECT ID_LIVRO, TITULO FROM livros ORDER BY TITULO"
+        )
+        livros = cursor.fetchall()
+
+        hoje = date.today().isoformat()
+
+        if request.method == "GET":
+            return render_template(
+                "cadastrar_emprestimo.html",
+                alunos=alunos,
+                livros=livros,
+                hoje=hoje,
+                dados={}
+            )
+
+        id_aluno_texto = request.form.get("id_aluno", "").strip()
+        id_livro_texto = request.form.get("id_livro", "").strip()
+        data_emprestimo_texto = request.form.get(
+            "data_emprestimo", ""
+        ).strip()
+        data_devolucao_texto = request.form.get(
+            "data_devolucao", ""
+        ).strip()
+
+        dados = {
+            "id_aluno": id_aluno_texto,
+            "id_livro": id_livro_texto,
+            "data_emprestimo": data_emprestimo_texto,
+            "data_devolucao": data_devolucao_texto
+        }
+
+        if not all([
+            id_aluno_texto,
+            id_livro_texto,
+            data_emprestimo_texto,
+            data_devolucao_texto
+        ]):
+            flash("Preencha todos os campos.", "erro")
+            return render_template(
+                "cadastrar_emprestimo.html",
+                alunos=alunos,
+                livros=livros,
+                hoje=hoje,
+                dados=dados
+            ), 400
+
+        try:
+            id_aluno = int(id_aluno_texto)
+            id_livro = int(id_livro_texto)
+            data_emprestimo = date.fromisoformat(
+                data_emprestimo_texto
+            )
+            data_devolucao = date.fromisoformat(
+                data_devolucao_texto
+            )
+        except ValueError:
+            flash("Confira os dados informados.", "erro")
+            return render_template(
+                "cadastrar_emprestimo.html",
+                alunos=alunos,
+                livros=livros,
+                hoje=hoje,
+                dados=dados
+            ), 400
+
+        if data_devolucao < data_emprestimo:
+            flash(
+                "A data prevista de devolução não pode ser anterior "
+                "à data do empréstimo.",
+                "erro"
+            )
+            return render_template(
+                "cadastrar_emprestimo.html",
+                alunos=alunos,
+                livros=livros,
+                hoje=hoje,
+                dados=dados
+            ), 400
+
+        cursor.execute(
+            "SELECT ID_ALUNO FROM aluno WHERE ID_ALUNO = %s",
+            (id_aluno,)
+        )
+        if cursor.fetchone() is None:
+            flash("O aluno selecionado não existe.", "erro")
+            return render_template(
+                "cadastrar_emprestimo.html",
+                alunos=alunos,
+                livros=livros,
+                hoje=hoje,
+                dados=dados
+            ), 400
+
+        cursor.execute(
+            "SELECT ID_LIVRO FROM livros WHERE ID_LIVRO = %s",
+            (id_livro,)
+        )
+        if cursor.fetchone() is None:
+            flash("O livro selecionado não existe.", "erro")
+            return render_template(
+                "cadastrar_emprestimo.html",
+                alunos=alunos,
+                livros=livros,
+                hoje=hoje,
+                dados=dados
+            ), 400
+
+        cursor.execute(
+            """
+            SELECT ID_IMPRESTIMO
+            FROM emprestrimo
+            WHERE ID_LIVRO = %s AND STATUS = 'PENDENTE'
+            LIMIT 1
+            """,
+            (id_livro,)
+        )
+
+        if cursor.fetchone() is not None:
+            flash(
+                "Este livro já possui um empréstimo pendente.",
+                "erro"
+            )
+            return render_template(
+                "cadastrar_emprestimo.html",
+                alunos=alunos,
+                livros=livros,
+                hoje=hoje,
+                dados=dados
+            ), 400
+
+        cursor.execute(
+            """
+            INSERT INTO emprestrimo
+                (DATA_EMPRESTIMO, DATA_DEVOLUCAO,
+                 ID_ALUNO, ID_LIVRO, STATUS)
+            VALUES (%s, %s, %s, %s, 'PENDENTE')
+            """,
+            (
+                data_emprestimo,
+                data_devolucao,
+                id_aluno,
+                id_livro
+            )
+        )
+
+        conexao.commit()
+        flash("Empréstimo cadastrado com sucesso!", "sucesso")
+        return redirect(url_for("listar_emprestimos"))
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro ao cadastrar empréstimo.")
+        flash("Não foi possível cadastrar o empréstimo.", "erro")
+        return redirect(url_for("cadastrar_emprestimo"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+
+@app.route(
+    "/emprestimos/devolver/<int:id_emprestimo>",
+    methods=["POST"]
+)
+def devolver_emprestimo(id_emprestimo):
+    conexao = conectar()
+
+    if conexao is None:
+        flash("Não foi possível conectar ao banco de dados.", "erro")
+        return redirect(url_for("listar_emprestimos"))
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            UPDATE emprestrimo
+            SET STATUS = 'DEVOLVIDO'
+            WHERE ID_IMPRESTIMO = %s
+              AND STATUS = 'PENDENTE'
+            """,
+            (id_emprestimo,)
+        )
+
+        if cursor.rowcount == 0:
+            conexao.rollback()
+            flash(
+                "Empréstimo não encontrado ou já devolvido.",
+                "erro"
+            )
+        else:
+            conexao.commit()
+            flash("Devolução registrada com sucesso!", "sucesso")
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro ao registrar devolução.")
+        flash("Não foi possível registrar a devolução.", "erro")
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+    return redirect(url_for("listar_emprestimos"))
+
+
 if __name__ == "__main__":
     app.run(port=5001, debug=True)

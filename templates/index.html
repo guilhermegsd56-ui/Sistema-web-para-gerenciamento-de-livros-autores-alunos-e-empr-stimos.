@@ -1,83 +1,357 @@
-
+```html
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Biblioteca Inteligente</title>
 
-    <link rel="stylesheet"
-          href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --escuro: #11120D;
+            --cinza: #565449;
+            --bege: #D8CFBC;
+            --branco: #FFFBF4;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: var(--branco);
+            color: var(--escuro);
+            min-height: 100vh;
+        }
+
+        header {
+            background: var(--escuro);
+            color: var(--branco);
+            padding: 22px 7%;
+        }
+
+        .cabecalho {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .marca h1 {
+            font-size: 26px;
+            margin-bottom: 6px;
+        }
+
+        .marca p {
+            color: var(--bege);
+            font-size: 14px;
+        }
+
+        nav {
+            display: flex;
+            gap: 18px;
+            flex-wrap: wrap;
+        }
+
+        nav a {
+            color: var(--branco);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        nav a:hover {
+            color: var(--bege);
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 55px 7%;
+        }
+
+        .apresentacao {
+            margin-bottom: 38px;
+        }
+
+        .apresentacao .etiqueta {
+            display: inline-block;
+            background: var(--bege);
+            color: var(--escuro);
+            padding: 7px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 18px;
+        }
+
+        .apresentacao h2 {
+            font-size: clamp(30px, 5vw, 44px);
+            max-width: 650px;
+            line-height: 1.15;
+            margin-bottom: 15px;
+        }
+
+        .apresentacao p {
+            max-width: 650px;
+            color: var(--cinza);
+            font-size: 16px;
+            line-height: 1.7;
+        }
+
+        .secao-titulo {
+            font-size: 23px;
+            margin-bottom: 8px;
+        }
+
+        .secao-descricao {
+            color: var(--cinza);
+            margin-bottom: 24px;
+            line-height: 1.5;
+        }
+
+        .grade {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 20px;
+        }
+
+        .cartao {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            background: white;
+            border: 1px solid var(--bege);
+            border-radius: 12px;
+            padding: 25px;
+            transition:
+                transform 0.2s,
+                box-shadow 0.2s;
+        }
+
+        .cartao:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 22px rgba(17, 18, 13, 0.08);
+        }
+
+        .icone {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: var(--bege);
+            border-radius: 10px;
+            font-size: 23px;
+            margin-bottom: 18px;
+        }
+
+        .cartao h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .cartao p {
+            color: var(--cinza);
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 22px;
+            flex-grow: 1;
+        }
+
+        .botao {
+            display: inline-block;
+            padding: 12px 16px;
+            background: var(--escuro);
+            color: var(--branco);
+            text-decoration: none;
+            border-radius: 7px;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .botao:hover {
+            background: var(--cinza);
+        }
+
+        .rodape {
+            margin-top: 55px;
+            padding-top: 22px;
+            border-top: 1px solid var(--bege);
+            color: var(--cinza);
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.7;
+        }
+
+        footer {
+            padding: 22px 7%;
+            background: var(--escuro);
+            color: var(--bege);
+            text-align: center;
+            font-size: 13px;
+        }
+
+        @media (max-width: 650px) {
+            header {
+                padding: 20px 6%;
+            }
+
+            .cabecalho {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            nav {
+                gap: 14px;
+            }
+
+            main {
+                padding: 38px 6%;
+            }
+
+            .grade {
+                grid-template-columns: 1fr;
+            }
+
+            .cartao {
+                padding: 22px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <header>
-        <a href="{{ url_for('inicio') }}" class="logo">
-            Biblioteca <span>Inteligente.</span>
-        </a>
 
-        <nav aria-label="Navegação principal">
-            <a href="{{ url_for('listar_livros') }}">Livros</a>
-            <a href="{{ url_for('listar_autores') }}">Autores</a>
-            <a href="#alunos">Alunos</a>
-            <a href="#emprestimos">Empréstimos</a>
-        </nav>
+    <header>
+        <div class="cabecalho">
+
+            <div class="marca">
+                <h1>Biblioteca Inteligente</h1>
+                <p>Sistema de gerenciamento bibliotecário</p>
+            </div>
+
+            <nav aria-label="Navegação principal">
+                <a href="{{ url_for('inicio') }}">Início</a>
+                <a href="{{ url_for('listar_livros') }}">Livros</a>
+                <a href="{{ url_for('listar_autores') }}">Autores</a>
+                <a href="{{ url_for('listar_alunos') }}">Alunos</a>
+                <a href="{{ url_for('listar_emprestimos') }}">Empréstimos</a>
+            </nav>
+
+        </div>
     </header>
 
     <main>
-        <div class="etiqueta">
-            ORGANIZAÇÃO • CONHECIMENTO • TECNOLOGIA
-        </div>
 
-        <h2>
-            Seu conhecimento,
-            <span>em um só lugar.</span>
-        </h2>
+        <section class="apresentacao">
+            <span class="etiqueta">GERENCIAMENTO BIBLIOTECÁRIO</span>
 
-        <p>
-            Organize livros, autores, alunos e empréstimos
-            em um só lugar. Uma maneira simples e inteligente
-            de gerenciar sua biblioteca.
-        </p>
+            <h2>Organize sua biblioteca em um só lugar.</h2>
 
-        <div class="status">
-            <span class="indicador"></span>
-            Sistema iniciado com sucesso!
-        </div>
-
-        <section class="atalhos" aria-label="Áreas da biblioteca">
-            <a href="{{ url_for('listar_livros') }}" class="atalho">
-                <span class="numero">01</span>
-                <h3>Livros</h3>
-                <p>Explore o acervo da biblioteca.</p>
-                <span class="seta">↗</span>
-            </a>
-
-            <a href="{{ url_for('listar_autores') }}" class="atalho">
-                <span class="numero">02</span>
-                <h3>Autores</h3>
-                <p>Consulte e cadastre os autores das obras.</p>
-                <span class="seta">↗</span>
-            </a>
-
-            <a href="#alunos" class="atalho" id="alunos">
-                <span class="numero">03</span>
-                <h3>Alunos</h3>
-                <p>Organize os registros dos alunos.</p>
-                <span class="seta">↗</span>
-            </a>
-
-            <a href="#emprestimos" class="atalho" id="emprestimos">
-                <span class="numero">04</span>
-                <h3>Empréstimos</h3>
-                <p>Acompanhe retiradas e devoluções.</p>
-                <span class="seta">↗</span>
-            </a>
+            <p>
+                Gerencie livros, autores e alunos, acompanhe os empréstimos
+                e registre as devoluções de maneira simples e organizada.
+            </p>
         </section>
+
+        <section>
+            <h2 class="secao-titulo">Painel de gerenciamento</h2>
+
+            <p class="secao-descricao">
+                Escolha uma das áreas abaixo para acessar as funcionalidades
+                do sistema.
+            </p>
+
+            <div class="grade">
+
+                <!-- LIVROS -->
+                <article class="cartao">
+                    <div class="icone" aria-hidden="true">📚</div>
+
+                    <h3>Livros</h3>
+
+                    <p>
+                        Cadastre novos livros, consulte o acervo, pesquise
+                        títulos e gerencie os registros existentes.
+                    </p>
+
+                    <a class="botao" href="{{ url_for('listar_livros') }}">
+                        Gerenciar livros
+                    </a>
+                </article>
+
+                <!-- AUTORES -->
+                <article class="cartao">
+                    <div class="icone" aria-hidden="true">✍️</div>
+
+                    <h3>Autores</h3>
+
+                    <p>
+                        Consulte os autores cadastrados, registre novos nomes
+                        e mantenha suas informações organizadas.
+                    </p>
+
+                    <a class="botao" href="{{ url_for('listar_autores') }}">
+                        Gerenciar autores
+                    </a>
+                </article>
+
+                <!-- ALUNOS -->
+                <article class="cartao">
+                    <div class="icone" aria-hidden="true">🎓</div>
+
+                    <h3>Alunos</h3>
+
+                    <p>
+                        Cadastre alunos, consulte seus dados e atualize
+                        informações dos usuários da biblioteca.
+                    </p>
+
+                    <a class="botao" href="{{ url_for('listar_alunos') }}">
+                        Gerenciar alunos
+                    </a>
+                </article>
+
+                <!-- EMPRÉSTIMOS -->
+                <article class="cartao">
+                    <div class="icone" aria-hidden="true">📖</div>
+
+                    <h3>Empréstimos</h3>
+
+                    <p>
+                        Registre empréstimos de livros, consulte os alunos
+                        responsáveis e acompanhe as devoluções.
+                    </p>
+
+                    <a class="botao"
+                       href="{{ url_for('listar_emprestimos') }}">
+                        Gerenciar empréstimos
+                    </a>
+                </article>
+
+            </div>
+        </section>
+
+        <div class="rodape">
+            Biblioteca Inteligente — organização, praticidade e controle
+            do acervo.
+        </div>
+
     </main>
 
     <footer>
+        &copy; {{ current_year if current_year is defined else '2026' }}
+        Biblioteca Inteligente. Todos os direitos reservados.
     </footer>
+
 </body>
 </html>
+```

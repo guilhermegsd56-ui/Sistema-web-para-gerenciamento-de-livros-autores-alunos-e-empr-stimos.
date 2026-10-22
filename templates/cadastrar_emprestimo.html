@@ -1,0 +1,206 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo empréstimo | Biblioteca Inteligente</title>
+
+    <style>
+        :root {
+            --escuro: #11120D;
+            --cinza: #565449;
+            --bege: #D8CFBC;
+            --branco: #FFFBF4;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 18px;
+            font-family: Arial, sans-serif;
+            background: var(--branco);
+            color: var(--escuro);
+        }
+
+        main {
+            max-width: 620px;
+            margin: 20px auto;
+            padding: 28px;
+            background: white;
+            border: 1px solid var(--bege);
+            border-radius: 12px;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        p {
+            color: var(--cinza);
+            line-height: 1.5;
+        }
+
+        label {
+            display: block;
+            margin-top: 18px;
+            margin-bottom: 7px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--bege);
+            border-radius: 7px;
+            background: white;
+            font-size: 15px;
+        }
+
+        .botoes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        button, a {
+            border: none;
+            border-radius: 7px;
+            padding: 12px 16px;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        button {
+            background: var(--escuro);
+            color: var(--branco);
+        }
+
+        a {
+            background: var(--bege);
+            color: var(--escuro);
+        }
+
+        .mensagem {
+            padding: 12px;
+            border-radius: 7px;
+            margin-bottom: 12px;
+            background: var(--bege);
+        }
+
+        .aviso {
+            margin-top: 18px;
+            padding: 12px;
+            background: #f5f0e6;
+            border-radius: 7px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 500px) {
+            main {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Novo empréstimo</h1>
+    <p>Selecione o aluno, o livro e as datas do empréstimo.</p>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensagem in mensagens %}
+            <div class="mensagem">{{ mensagem }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <form method="POST"
+          action="{{ url_for('cadastrar_emprestimo') }}">
+
+        <label for="id_aluno">Aluno</label>
+        <select id="id_aluno" name="id_aluno" required>
+            <option value="">Selecione um aluno</option>
+
+            {% for aluno in alunos %}
+                <option
+                    value="{{ aluno.ID_ALUNO }}"
+                    {% if dados.get('id_aluno', '')|string
+                          == aluno.ID_ALUNO|string %}selected{% endif %}
+                >
+                    {{ aluno.NOME }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="id_livro">Livro</label>
+        <select id="id_livro" name="id_livro" required>
+            <option value="">Selecione um livro</option>
+
+            {% for livro in livros %}
+                <option
+                    value="{{ livro.ID_LIVRO }}"
+                    {% if dados.get('id_livro', '')|string
+                          == livro.ID_LIVRO|string %}selected{% endif %}
+                >
+                    {{ livro.TITULO }}
+                </option>
+            {% endfor %}
+        </select>
+
+        <label for="data_emprestimo">Data do empréstimo</label>
+        <input
+            type="date"
+            id="data_emprestimo"
+            name="data_emprestimo"
+            value="{{ dados.get('data_emprestimo', hoje) }}"
+            required
+        >
+
+        <label for="data_devolucao">
+            Data prevista para devolução
+        </label>
+        <input
+            type="date"
+            id="data_devolucao"
+            name="data_devolucao"
+            value="{{ dados.get('data_devolucao', '') }}"
+            min="{{ dados.get('data_emprestimo', hoje) }}"
+            required
+        >
+
+        <div class="aviso">
+            A data de devolução informada é a data prevista.
+            O empréstimo continuará pendente até você registrar a devolução.
+        </div>
+
+        <div class="botoes">
+            <button type="submit">Cadastrar empréstimo</button>
+            <a href="{{ url_for('listar_emprestimos') }}">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</main>
+
+<script>
+    const dataEmprestimo = document.getElementById("data_emprestimo");
+    const dataDevolucao = document.getElementById("data_devolucao");
+
+    dataEmprestimo.addEventListener("change", function () {
+        dataDevolucao.min = dataEmprestimo.value;
+
+        if (
+            dataDevolucao.value &&
+            dataDevolucao.value < dataEmprestimo.value
+        ) {
+            dataDevolucao.value = dataEmprestimo.value;
+        }
+    });
+</script>
+</body>
+</html>

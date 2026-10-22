@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empréstimos | Biblioteca Inteligente</title>
+
+    <style>
+        :root {
+            --escuro: #11120D;
+            --cinza: #565449;
+            --bege: #D8CFBC;
+            --branco: #FFFBF4;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px 18px;
+            font-family: Arial, sans-serif;
+            background: var(--branco);
+            color: var(--escuro);
+        }
+
+        main {
+            max-width: 1100px;
+            margin: auto;
+        }
+
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+        }
+
+        p {
+            color: var(--cinza);
+        }
+
+        a, button {
+            display: inline-block;
+            border: none;
+            border-radius: 7px;
+            padding: 11px 15px;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .principal {
+            background: var(--escuro);
+            color: var(--branco);
+        }
+
+        .secundario {
+            background: var(--bege);
+            color: var(--escuro);
+        }
+
+        form.busca {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            min-width: 200px;
+            padding: 12px;
+            border: 1px solid var(--bege);
+            border-radius: 7px;
+            font-size: 15px;
+        }
+
+        .tabela {
+            overflow-x: auto;
+            background: white;
+            border: 1px solid var(--bege);
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 850px;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee9df;
+        }
+
+        th {
+            background: var(--bege);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 9px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .pendente {
+            background: #f5e6bd;
+            color: #624900;
+        }
+
+        .devolvido {
+            background: #dcebd8;
+            color: #245126;
+        }
+
+        .mensagem {
+            padding: 12px;
+            border-radius: 7px;
+            margin-bottom: 15px;
+            background: var(--bege);
+        }
+
+        .acao {
+            background: var(--escuro);
+            color: white;
+        }
+
+        .vazio {
+            text-align: center;
+            padding: 25px;
+            color: var(--cinza);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <header>
+        <div>
+            <h1>Empréstimos</h1>
+            <p>Consulte os empréstimos e registre devoluções.</p>
+        </div>
+
+        <div>
+            <a class="secundario" href="{{ url_for('inicio') }}">
+                Início
+            </a>
+            <a class="principal"
+               href="{{ url_for('cadastrar_emprestimo') }}">
+                + Novo empréstimo
+            </a>
+        </div>
+    </header>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensagem in mensagens %}
+            <div class="mensagem">{{ mensagem }}</div>
+        {% endfor %}
+    {% endwith %}
+
+    <form class="busca" method="GET"
+          action="{{ url_for('listar_emprestimos') }}">
+        <input
+            type="search"
+            name="busca"
+            placeholder="Buscar por aluno, livro ou status..."
+            value="{{ busca }}"
+        >
+        <button class="principal" type="submit">Buscar</button>
+        <a class="secundario"
+           href="{{ url_for('listar_emprestimos') }}">
+            Limpar
+        </a>
+    </form>
+
+    <div class="tabela">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Aluno</th>
+                    <th>Livro</th>
+                    <th>Data do empréstimo</th>
+                    <th>Devolução prevista</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for emprestimo in emprestimos %}
+                    <tr>
+                        <td>{{ emprestimo.ID_IMPRESTIMO }}</td>
+                        <td>
+                            {{ emprestimo.NOME_ALUNO or
+                               'Aluno não encontrado' }}
+                        </td>
+                        <td>
+                            {{ emprestimo.TITULO_LIVRO or
+                               'Livro não informado (registro antigo)' }}
+                        </td>
+                        <td>
+                            {{ emprestimo.DATA_EMPRESTIMO.strftime('%d/%m/%Y') }}
+                        </td>
+                        <td>
+                            {{ emprestimo.DATA_DEVOLUCAO.strftime('%d/%m/%Y') }}
+                        </td>
+                        <td>
+                            {% if emprestimo.STATUS == 'DEVOLVIDO' %}
+                                <span class="status devolvido">
+                                    Devolvido
+                                </span>
+                            {% else %}
+                                <span class="status pendente">
+                                    Pendente
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if emprestimo.STATUS == 'PENDENTE'
+                                  and emprestimo.ID_LIVRO %}
+                                <form
+                                    method="POST"
+                                    action="{{ url_for(
+                                        'devolver_emprestimo',
+                                        id_emprestimo=emprestimo.ID_IMPRESTIMO
+                                    ) }}"
+                                    onsubmit="return confirm(
+                                        'Confirmar a devolução deste livro?'
+                                    );"
+                                >
+                                    <button class="acao" type="submit">
+                                        Devolver
+                                    </button>
+                                </form>
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="vazio">
+                            Nenhum empréstimo encontrado.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>
