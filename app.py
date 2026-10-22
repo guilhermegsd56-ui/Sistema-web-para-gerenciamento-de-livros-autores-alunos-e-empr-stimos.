@@ -996,6 +996,7 @@ def excluir_aluno(id_aluno):
 # EMPRÉSTIMOS
 # ==================================================
 
+
 @app.route("/emprestimos")
 def listar_emprestimos():
     conexao = conectar()
@@ -1007,7 +1008,13 @@ def listar_emprestimos():
 
     try:
         cursor = conexao.cursor(dictionary=True)
+
         busca = request.args.get("busca", "").strip()
+        status = request.args.get("status", "TODOS").strip().upper()
+
+        # Aceita apenas os filtros disponíveis.
+        if status not in ("TODOS", "PENDENTE", "DEVOLVIDO"):
+            status = "TODOS"
 
         consulta = """
             SELECT
@@ -1022,31 +1029,42 @@ def listar_emprestimos():
             FROM emprestrimo e
             LEFT JOIN aluno a ON a.ID_ALUNO = e.ID_ALUNO
             LEFT JOIN livros l ON l.ID_LIVRO = e.ID_LIVRO
+            WHERE 1 = 1
         """
 
-        parametros = ()
+        parametros = []
 
+        # Filtro por situação do empréstimo.
+        if status != "TODOS":
+            consulta += " AND e.STATUS = %s"
+            parametros.append(status)
+
+        # Pesquisa por aluno, livro ou status.
         if busca:
             consulta += """
-                WHERE a.NOME LIKE %s
-                   OR l.TITULO LIKE %s
-                   OR e.STATUS LIKE %s
+                AND (
+                    a.NOME LIKE %s
+                    OR l.TITULO LIKE %s
+                    OR e.STATUS LIKE %s
+                )
             """
-            parametros = (
+
+            parametros.extend([
                 f"%{busca}%",
                 f"%{busca}%",
                 f"%{busca}%"
-            )
+            ])
 
         consulta += " ORDER BY e.ID_IMPRESTIMO DESC"
 
-        cursor.execute(consulta, parametros)
+        cursor.execute(consulta, tuple(parametros))
         emprestimos = cursor.fetchall()
 
         return render_template(
             "emprestimos.html",
             emprestimos=emprestimos,
-            busca=busca
+            busca=busca,
+            status=status
         )
 
     except Exception:
@@ -1056,7 +1074,9 @@ def listar_emprestimos():
     finally:
         if cursor is not None:
             cursor.close()
+
         conexao.close()
+
 
 
 @app.route("/emprestimos/cadastrar", methods=["GET", "POST"])

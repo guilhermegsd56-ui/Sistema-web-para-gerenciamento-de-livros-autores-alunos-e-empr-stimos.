@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empréstimos | Biblioteca Inteligente</title>
+    <title>Histórico de Empréstimos | Biblioteca Inteligente</title>
 
     <style>
         :root {
@@ -68,20 +68,29 @@
             color: var(--escuro);
         }
 
-        form.busca {
+        form.filtros {
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
             margin-bottom: 20px;
+            align-items: center;
         }
 
-        input {
+        input, select {
             flex: 1;
             min-width: 200px;
             padding: 12px;
             border: 1px solid var(--bege);
             border-radius: 7px;
             font-size: 15px;
+            background: white;
+            color: var(--escuro);
+        }
+
+        .resumo {
+            margin-bottom: 15px;
+            color: var(--cinza);
+            font-size: 14px;
         }
 
         .tabela {
@@ -151,21 +160,39 @@
             body {
                 padding: 20px 12px;
             }
+
+            header > div:last-child {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            form.filtros {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            form.filtros input,
+            form.filtros select {
+                width: 100%;
+            }
         }
     </style>
 </head>
+
 <body>
 <main>
     <header>
         <div>
-            <h1>Empréstimos</h1>
-            <p>Consulte os empréstimos e registre devoluções.</p>
+            <h1>Histórico de empréstimos</h1>
+            <p>Consulte os empréstimos anteriores e registre devoluções.</p>
         </div>
 
         <div>
             <a class="secundario" href="{{ url_for('inicio') }}">
                 Início
             </a>
+
             <a class="principal"
                href="{{ url_for('cadastrar_emprestimo') }}">
                 + Novo empréstimo
@@ -179,20 +206,52 @@
         {% endfor %}
     {% endwith %}
 
-    <form class="busca" method="GET"
+    <form class="filtros" method="GET"
           action="{{ url_for('listar_emprestimos') }}">
+
         <input
             type="search"
             name="busca"
             placeholder="Buscar por aluno, livro ou status..."
             value="{{ busca }}"
         >
-        <button class="principal" type="submit">Buscar</button>
+
+        <select name="status" aria-label="Filtrar por situação">
+            <option value="TODOS"
+                {% if status == 'TODOS' %}selected{% endif %}>
+                Todos os empréstimos
+            </option>
+
+            <option value="PENDENTE"
+                {% if status == 'PENDENTE' %}selected{% endif %}>
+                Somente pendentes
+            </option>
+
+            <option value="DEVOLVIDO"
+                {% if status == 'DEVOLVIDO' %}selected{% endif %}>
+                Somente devolvidos
+            </option>
+        </select>
+
+        <button class="principal" type="submit">
+            Filtrar
+        </button>
+
         <a class="secundario"
            href="{{ url_for('listar_emprestimos') }}">
             Limpar
         </a>
     </form>
+
+    <p class="resumo">
+        {% if status == 'PENDENTE' %}
+            Exibindo empréstimos pendentes.
+        {% elif status == 'DEVOLVIDO' %}
+            Exibindo empréstimos devolvidos.
+        {% else %}
+            Exibindo todos os registros de empréstimos.
+        {% endif %}
+    </p>
 
     <div class="tabela">
         <table>
@@ -212,25 +271,30 @@
                 {% for emprestimo in emprestimos %}
                     <tr>
                         <td>{{ emprestimo.ID_IMPRESTIMO }}</td>
+
                         <td>
                             {{ emprestimo.NOME_ALUNO or
                                'Aluno não encontrado' }}
                         </td>
-<td>
-    {% if emprestimo.TITULO_LIVRO %}
-        {{ emprestimo.TITULO_LIVRO }}
-    {% else %}
-        <span title="Este registro não possui um livro vinculado">
-            Livro não vinculado
-        </span>
-    {% endif %}
-</td>
+
+                        <td>
+                            {% if emprestimo.TITULO_LIVRO %}
+                                {{ emprestimo.TITULO_LIVRO }}
+                            {% else %}
+                                <span title="Este registro não possui um livro vinculado">
+                                    Livro não vinculado
+                                </span>
+                            {% endif %}
+                        </td>
+
                         <td>
                             {{ emprestimo.DATA_EMPRESTIMO.strftime('%d/%m/%Y') }}
                         </td>
+
                         <td>
                             {{ emprestimo.DATA_DEVOLUCAO.strftime('%d/%m/%Y') }}
                         </td>
+
                         <td>
                             {% if emprestimo.STATUS == 'DEVOLVIDO' %}
                                 <span class="status devolvido">
@@ -242,6 +306,7 @@
                                 </span>
                             {% endif %}
                         </td>
+
                         <td>
                             {% if emprestimo.STATUS == 'PENDENTE'
                                   and emprestimo.ID_LIVRO %}
@@ -264,10 +329,11 @@
                             {% endif %}
                         </td>
                     </tr>
+
                 {% else %}
                     <tr>
                         <td colspan="7" class="vazio">
-                            Nenhum empréstimo encontrado.
+                            Nenhum empréstimo encontrado para esse filtro.
                         </td>
                     </tr>
                 {% endfor %}
