@@ -1,20 +1,27 @@
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#11120D">
 
     <title>Biblioteca Inteligente</title>
 
     <style>
         :root {
             --preto: #11120D;
-            --cinza: #565449;
-            --bege: #D8CFBC;
-            --fundo: #FFFBF4;
+            --preto-suave: #1A1B15;
+            --preto-card: #202119;
+            --bege: #E1E0CC;
+            --bege-escuro: #D8CFBC;
+            --fundo: #F8F7F0;
             --branco: #FFFFFF;
-            --borda: #DDD2BF;
+            --cinza: #77776B;
+            --borda: #E5E2D7;
+            --verde: #78966D;
+            --sombra: 0 14px 40px rgba(17, 18, 13, 0.07);
         }
 
         * {
@@ -23,240 +30,1201 @@
             box-sizing: border-box;
         }
 
+        html {
+            scroll-behavior: smooth;
+            scroll-padding-top: 24px;
+        }
+
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            min-height: 100vh;
             background: var(--fundo);
             color: var(--preto);
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
             line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
         }
 
-        header {
+        a {
+            color: inherit;
+        }
+
+        a:focus-visible {
+            outline: 3px solid #A8A58D;
+            outline-offset: 4px;
+        }
+
+        button,
+        a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* ==============================
+           HERO PRINCIPAL
+        ============================== */
+
+        .hero {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            isolation: isolate;
+            min-height: min(780px, 100svh);
+            min-height: max(650px, min(780px, 100svh));
+            overflow: hidden;
             background: var(--preto);
-            color: var(--branco);
-            padding: 14px 7%;
+            color: var(--bege);
         }
 
-        .cabecalho {
-            max-width: 1200px;
-            margin: auto;
+        .hero-fundo {
+            position: absolute;
+            inset: 0;
+            z-index: -3;
+            background-color: #202119;
+            background-image: url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2200&q=85");
+            background-size: cover;
+            background-position: center 48%;
+            transform: scale(1.035);
+            animation: fundo-entrada 1.4s ease-out both;
+        }
+
+        .hero-gradiente {
+            position: absolute;
+            inset: 0;
+            z-index: -2;
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(12, 13, 10, 0.91) 0%,
+                    rgba(12, 13, 10, 0.70) 46%,
+                    rgba(12, 13, 10, 0.28) 100%
+                ),
+                linear-gradient(
+                    0deg,
+                    rgba(12, 13, 10, 0.95) 0%,
+                    rgba(12, 13, 10, 0.10) 65%,
+                    rgba(12, 13, 10, 0.48) 100%
+                );
+        }
+
+        .hero-granulado {
+            position: absolute;
+            inset: 0;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.13;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.25'/%3E%3C/svg%3E");
+        }
+
+        /* ==============================
+           NAVEGAÇÃO
+        ============================== */
+
+        .topbar {
+            position: relative;
+            z-index: 5;
+            width: min(1440px, 100%);
+            margin: 0 auto;
+            padding: 26px 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            animation: aparecer 0.8s 0.1s both;
+        }
+
+        .marca {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+
+        .marca-simbolo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 43px;
+            height: 43px;
+            border: 1px solid rgba(225, 224, 204, 0.55);
+            border-radius: 50%;
+            color: var(--bege);
+            font-family: Georgia, serif;
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .marca-texto {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.25;
+        }
+
+        .marca-texto strong {
+            color: var(--bege);
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+        }
+
+        .marca-texto span {
+            margin-top: 3px;
+            color: rgba(225, 224, 204, 0.62);
+            font-size: 10px;
+            letter-spacing: 1.4px;
+            text-transform: uppercase;
+        }
+
+        .navegacao {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: clamp(14px, 2.4vw, 34px);
+        }
+
+        .navegacao a {
+            position: relative;
+            padding: 7px 0;
+            color: rgba(225, 224, 204, 0.78);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.25s ease;
+        }
+
+        .navegacao a::after {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            height: 1px;
+            background: var(--bege);
+            content: "";
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.25s ease;
+        }
+
+        .navegacao a:hover {
+            color: var(--bege);
+        }
+
+        .navegacao a:hover::after {
+            transform: scaleX(1);
+        }
+
+        .nav-indicador {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            margin-right: 7px;
+            border-radius: 50%;
+            background: var(--verde);
+            box-shadow: 0 0 12px rgba(120, 150, 109, 0.55);
+        }
+
+        /* ==============================
+           CONTEÚDO DO HERO
+        ============================== */
+
+        .hero-conteudo {
+            width: min(1440px, 100%);
+            margin: 0 auto;
+            padding: 65px 6% 72px;
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(250px, 0.65fr);
+            align-items: end;
+            gap: 50px;
+        }
+
+        .hero-principal {
+            max-width: 850px;
+        }
+
+        .hero-etiqueta {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 28px;
+            color: rgba(225, 224, 204, 0.85);
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 2.7px;
+            text-transform: uppercase;
+            animation: subir 0.8s 0.2s both;
+        }
+
+        .hero-etiqueta::before {
+            width: 25px;
+            height: 1px;
+            background: var(--bege);
+            content: "";
+        }
+
+        .hero h1 {
+            max-width: 950px;
+            color: var(--bege);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(58px, 8.3vw, 124px);
+            font-weight: 400;
+            letter-spacing: -0.075em;
+            line-height: 0.94;
+            animation: subir 0.95s 0.28s both;
+        }
+
+        .hero h1 span {
+            display: block;
+            font-style: italic;
+            font-weight: 400;
+        }
+
+        .hero-descricao {
+            max-width: 520px;
+            margin-top: 30px;
+            color: rgba(225, 224, 204, 0.75);
+            font-size: clamp(14px, 1.3vw, 17px);
+            line-height: 1.9;
+            animation: subir 0.9s 0.43s both;
+        }
+
+        .hero-acoes {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 25px;
+            margin-top: 35px;
+            animation: subir 0.9s 0.55s both;
+        }
+
+        .botao-principal {
+            min-height: 52px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            padding: 6px 7px 6px 23px;
+            border: 1px solid var(--bege);
+            border-radius: 50px;
+            background: var(--bege);
+            color: var(--preto);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+            transition:
+                background 0.25s ease,
+                color 0.25s ease,
+                transform 0.25s ease;
+        }
+
+        .botao-principal:hover {
+            background: transparent;
+            color: var(--bege);
+            transform: translateY(-2px);
+        }
+
+        .botao-seta {
+            width: 38px;
+            height: 38px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--preto);
+            color: var(--bege);
+            font-size: 19px;
+            transition: transform 0.25s ease;
+        }
+
+        .botao-principal:hover .botao-seta {
+            transform: rotate(-45deg);
+        }
+
+        .link-secundario {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            color: rgba(225, 224, 204, 0.82);
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.2s ease;
+        }
+
+        .link-secundario:hover {
+            color: var(--bege);
+        }
+
+        .link-secundario span {
+            font-size: 17px;
+        }
+
+        /* ==============================
+           PAINEL LATERAL DO HERO
+        ============================== */
+
+        .hero-lateral {
+            padding: 24px 0 5px 26px;
+            border-left: 1px solid rgba(225, 224, 204, 0.32);
+            animation: subir 0.9s 0.6s both;
+        }
+
+        .lateral-numero {
+            display: block;
+            margin-bottom: 9px;
+            color: var(--bege);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 42px;
+            line-height: 1.1;
+        }
+
+        .lateral-titulo {
+            display: block;
+            margin-bottom: 13px;
+            color: var(--bege);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .lateral-descricao {
+            max-width: 300px;
+            color: rgba(225, 224, 204, 0.68);
+            font-size: 12px;
+            line-height: 1.8;
+        }
+
+        .lateral-linha {
+            width: 42px;
+            height: 1px;
+            margin: 23px 0;
+            background: rgba(225, 224, 204, 0.55);
+        }
+
+        .hero-rodape {
+            position: absolute;
+            right: 6%;
+            bottom: 24px;
+            left: 6%;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 25px;
-        }
-
-        .marca h1 {
-            font-size: 26px;
-            line-height: 1.3;
-        }
-
-        .marca p {
-            color: var(--bege);
-            font-size: 14px;
-        }
-
-        nav {
-            display: flex;
-            flex-wrap: wrap;
             gap: 20px;
+            color: rgba(225, 224, 204, 0.58);
+            font-size: 10px;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
         }
 
-        nav a {
-            color: var(--branco);
-            text-decoration: none;
+        .hero-rodape span {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .hero-rodape .linha-rodape {
+            width: 30px;
+            height: 1px;
+            background: rgba(225, 224, 204, 0.45);
+        }
+
+        /* ==============================
+           CONTEÚDO GERAL
+        ============================== */
+
+        .conteudo {
+            width: min(1440px, 100%);
+            margin: 0 auto;
+            padding: 90px 6% 80px;
+        }
+
+        .mensagem {
+            margin-bottom: 25px;
+            padding: 14px 18px;
+            border: 1px solid var(--borda);
+            border-radius: 12px;
+            background: var(--branco);
+            color: var(--preto);
             font-size: 14px;
         }
 
-        nav a:hover {
-            color: var(--bege);
+        .cabecalho-secao {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 25px;
+            margin-bottom: 30px;
         }
 
-        main {
-            max-width: 1200px;
-            margin: auto;
-            padding: 55px 7%;
+        .sobrelinha {
+            display: block;
+            margin-bottom: 10px;
+            color: #777563;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 2.4px;
+            text-transform: uppercase;
         }
 
-        .etiqueta {
-            display: inline-block;
-            background: var(--bege);
-            padding: 5px 13px;
-            border-radius: 20px;
-            font-size: 12px;
-            margin-bottom: 14px;
-        }
-
-        .apresentacao h2 {
-            max-width: 700px;
-            font-size: clamp(32px, 4vw, 44px);
+        .titulo-secao {
+            color: var(--preto);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(30px, 4vw, 45px);
+            font-weight: 400;
+            letter-spacing: -1.6px;
             line-height: 1.15;
-            margin-bottom: 16px;
         }
 
-        .apresentacao p {
-            max-width: 750px;
+        .descricao-secao {
+            max-width: 500px;
+            margin-top: 10px;
             color: var(--cinza);
-            margin-bottom: 36px;
+            font-size: 14px;
+            line-height: 1.8;
         }
 
-        .secao-titulo {
-            font-size: 23px;
-            margin-bottom: 3px;
+        .link-secao {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            padding-bottom: 5px;
+            color: var(--preto);
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
         }
 
-        .secao-descricao {
-            color: var(--cinza);
-            margin-bottom: 22px;
+        .link-secao span {
+            font-size: 18px;
+            transition: transform 0.2s ease;
         }
+
+        .link-secao:hover span {
+            transform: translateX(5px);
+        }
+
+        /* ==============================
+           INDICADORES
+        ============================== */
 
         .indicadores {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 38px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
         }
 
         .indicador {
-            background: var(--branco);
+            position: relative;
+            min-width: 0;
+            min-height: 205px;
+            overflow: hidden;
+            padding: 24px;
             border: 1px solid var(--borda);
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(17, 18, 13, 0.04);
+            border-radius: 16px;
+            background: var(--branco);
+            box-shadow: 0 5px 22px rgba(17, 18, 13, 0.025);
+            transition:
+                transform 0.28s ease,
+                box-shadow 0.28s ease,
+                border-color 0.28s ease;
+            animation: subir 0.7s both;
+        }
+
+        .indicador:nth-child(2) {
+            animation-delay: 0.07s;
+        }
+
+        .indicador:nth-child(3) {
+            animation-delay: 0.14s;
+        }
+
+        .indicador:nth-child(4) {
+            animation-delay: 0.21s;
+        }
+
+        .indicador:hover {
+            transform: translateY(-5px);
+            border-color: #C8C4B3;
+            box-shadow: var(--sombra);
         }
 
         .indicador-topo {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 12px;
+            margin-bottom: 25px;
         }
 
         .indicador-label {
             color: var(--cinza);
-            font-size: 14px;
+            font-size: 12px;
+            line-height: 1.5;
         }
 
-        .indicador-icone,
-        .cartao-icone {
-            width: 44px;
-            height: 44px;
+        .indicador-icone {
+            width: 43px;
+            height: 43px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: var(--bege);
-            border-radius: 10px;
-            font-size: 21px;
             flex-shrink: 0;
+            border: 1px solid var(--borda);
+            border-radius: 12px;
+            background: #F8F6EF;
+            color: var(--preto);
+            font-size: 20px;
         }
 
         .indicador-numero {
-            font-size: 32px;
-            font-weight: bold;
-            line-height: 1.3;
+            color: var(--preto);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(34px, 3.2vw, 45px);
+            font-weight: 400;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
             overflow-wrap: anywhere;
         }
 
         .indicador-legenda {
+            margin-top: 10px;
             color: var(--cinza);
-            font-size: 12px;
-            margin-top: 5px;
+            font-size: 11px;
         }
 
-        .painel {
-            margin-top: 10px;
+        .indicador-destaque {
+            border-color: var(--preto);
+            background: var(--preto);
+        }
+
+        .indicador-destaque .indicador-label,
+        .indicador-destaque .indicador-legenda {
+            color: rgba(225, 224, 204, 0.7);
+        }
+
+        .indicador-destaque .indicador-numero {
+            color: var(--bege);
+        }
+
+        .indicador-destaque .indicador-icone {
+            border-color: rgba(225, 224, 204, 0.2);
+            background: rgba(225, 224, 204, 0.1);
+            color: var(--bege);
+        }
+
+        /* ==============================
+           RESUMO E EMPRÉSTIMOS
+        ============================== */
+
+        .secao-extra {
+            margin-top: 100px;
+        }
+
+        .resumo-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.4fr);
+            align-items: stretch;
+            gap: 20px;
+        }
+
+        .bloco-resumo {
+            min-width: 0;
+            padding: 30px;
+            border: 1px solid var(--borda);
+            border-radius: 18px;
+            background: var(--branco);
+            box-shadow: 0 5px 22px rgba(17, 18, 13, 0.025);
+        }
+
+        .bloco-cabecalho {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 28px;
+        }
+
+        .bloco-cabecalho h3 {
+            color: var(--preto);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 23px;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+        }
+
+        .bloco-cabecalho p {
+            margin-top: 6px;
+            color: var(--cinza);
+            font-size: 12px;
+        }
+
+        .bloco-icone {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border-radius: 12px;
+            background: #F4F1E8;
+            font-size: 18px;
+        }
+
+        .barra-legenda {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin: 22px 0 10px;
+            color: #55554B;
+            font-size: 12px;
+        }
+
+        .barra-nome {
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+        }
+
+        .ponto-status {
+            width: 8px;
+            height: 8px;
+            flex-shrink: 0;
+            border-radius: 50%;
+            background: #A49E88;
+        }
+
+        .ponto-status.devolvido {
+            background: var(--verde);
+        }
+
+        .barra-legenda strong {
+            color: var(--preto);
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .barra-fundo {
+            width: 100%;
+            height: 8px;
+            overflow: hidden;
+            border-radius: 20px;
+            background: #EEECE4;
+        }
+
+        .barra-preenchida {
+            height: 100%;
+            min-width: 0;
+            border-radius: inherit;
+            background: #A49E88;
+            transition: width 0.8s ease;
+        }
+
+        .barra-preenchida.devolvidos {
+            background: var(--verde);
+        }
+
+        .nota-resumo {
+            margin-top: 25px;
+            padding-top: 17px;
+            border-top: 1px solid var(--borda);
+            color: var(--cinza);
+            font-size: 11px;
+            line-height: 1.7;
+        }
+
+        /* ==============================
+           TABELA DE EMPRÉSTIMOS
+        ============================== */
+
+        .tabela-responsiva {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .tabela-emprestimos {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .tabela-emprestimos th {
+            padding: 12px 10px;
+            border-bottom: 1px solid var(--borda);
+            color: var(--cinza);
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .tabela-emprestimos td {
+            padding: 16px 10px;
+            border-bottom: 1px solid #F0EEE7;
+            color: #46463D;
+            vertical-align: middle;
+        }
+
+        .tabela-emprestimos tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .tabela-emprestimos tbody tr:hover {
+            background: #FBFAF6;
+        }
+
+        .tabela-emprestimos tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .aluno-nome {
+            color: var(--preto);
+            font-weight: 600;
+        }
+
+        .livro-titulo {
+            display: inline-block;
+            max-width: 220px;
+            color: var(--cinza);
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 9px;
+            border: 1px solid #E6DDC5;
+            border-radius: 30px;
+            background: #F8F2E3;
+            color: #75653B;
+            font-size: 10px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .status::before {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+            content: "";
+        }
+
+        .status.devolvido {
+            border-color: #D8E5D3;
+            background: #EEF5EA;
+            color: #496D40;
+        }
+
+        .sem-registros {
+            padding: 24px 0;
+            color: var(--cinza);
+            font-size: 13px;
+        }
+
+        /* ==============================
+           ÁREAS DO SISTEMA
+        ============================== */
+
+        .secao-gerenciamento {
+            margin-top: 100px;
         }
 
         .cartoes {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 15px;
         }
 
         .cartao {
-            background: var(--branco);
-            border: 1px solid var(--borda);
-            border-radius: 12px;
-            padding: 25px;
-            box-shadow: 0 5px 20px rgba(17, 18, 13, 0.05);
+            position: relative;
             display: flex;
             flex-direction: column;
             align-items: flex-start;
+            min-width: 0;
+            min-height: 265px;
+            padding: 25px;
+            overflow: hidden;
+            border: 1px solid var(--borda);
+            border-radius: 16px;
+            background: var(--branco);
+            text-decoration: none;
+            transition:
+                transform 0.25s ease,
+                background 0.25s ease,
+                border-color 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+
+        .cartao:hover {
+            transform: translateY(-5px);
+            border-color: #C7C2AF;
+            box-shadow: var(--sombra);
         }
 
         .cartao-icone {
-            margin-bottom: 12px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            border-radius: 13px;
+            background: #F3F0E6;
+            font-size: 22px;
         }
 
         .cartao h3 {
-            font-size: 20px;
-            margin-bottom: 7px;
+            margin-bottom: 9px;
+            color: var(--preto);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 23px;
+            font-weight: 400;
         }
 
         .cartao p {
+            margin-bottom: 25px;
             color: var(--cinza);
-            font-size: 14px;
-            margin-bottom: 22px;
+            font-size: 12px;
+            line-height: 1.8;
         }
 
-        .botao {
-            display: inline-block;
-            background: var(--preto);
-            color: var(--branco);
-            padding: 10px 17px;
-            border-radius: 7px;
-            text-decoration: none;
-            font-size: 14px;
+        .cartao-rodape {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
             margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid var(--borda);
+            color: var(--preto);
+            font-size: 11px;
+            font-weight: 600;
         }
 
-        .botao:hover {
-            background: var(--cinza);
+        .cartao-seta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            border: 1px solid var(--borda);
+            border-radius: 50%;
+            font-size: 16px;
+            transition:
+                transform 0.25s ease,
+                background 0.25s ease,
+                color 0.25s ease;
         }
 
-        .mensagem {
-            background: var(--bege);
-            border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            font-size: 14px;
+        .cartao:hover .cartao-seta {
+            transform: rotate(-45deg);
+            background: var(--preto);
+            color: var(--bege);
         }
+
+        /* ==============================
+           RODAPÉ
+        ============================== */
 
         footer {
-            text-align: center;
-            color: var(--cinza);
-            font-size: 13px;
-            padding: 24px;
             border-top: 1px solid var(--borda);
+            background: #F1EFE7;
         }
 
-        @media (max-width: 800px) {
-            .cabecalho {
-                flex-direction: column;
-                align-items: flex-start;
+        .rodape-conteudo {
+            width: min(1440px, 100%);
+            margin: 0 auto;
+            padding: 27px 6%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .rodape-marca {
+            color: var(--preto);
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .rodape-descricao {
+            color: var(--cinza);
+            font-size: 11px;
+        }
+
+        /* ==============================
+           ANIMAÇÕES
+        ============================== */
+
+        @keyframes subir {
+            from {
+                opacity: 0;
+                transform: translateY(22px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes aparecer {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fundo-entrada {
+            from {
+                opacity: 0.6;
+                transform: scale(1.08);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1.035);
+            }
+        }
+
+        /* ==============================
+           RESPONSIVIDADE
+        ============================== */
+
+        @media (min-width: 1500px) {
+            .hero {
+                min-height: 820px;
+            }
+        }
+
+        @media (max-width: 1050px) {
+            .topbar {
+                padding-right: 5%;
+                padding-left: 5%;
+            }
+
+            .hero-conteudo {
+                grid-template-columns: minmax(0, 1.3fr) minmax(220px, 0.7fr);
+                gap: 35px;
+                padding-right: 5%;
+                padding-left: 5%;
+            }
+
+            .hero h1 {
+                font-size: clamp(58px, 8.5vw, 95px);
             }
 
             .indicadores {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
 
-            main {
-                padding-top: 35px;
+            .cartoes {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .conteudo {
+                padding-right: 5%;
+                padding-left: 5%;
             }
         }
 
-        @media (max-width: 520px) {
-            nav {
+        @media (max-width: 760px) {
+            .hero {
+                min-height: 760px;
+                min-height: max(760px, 100svh);
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 23px;
+                padding-top: 22px;
+            }
+
+            .navegacao {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 10px 22px;
+            }
+
+            .navegacao a {
+                font-size: 11px;
+            }
+
+            .hero-conteudo {
+                grid-template-columns: 1fr;
+                gap: 35px;
+                padding-top: 45px;
+                padding-bottom: 80px;
+            }
+
+            .hero h1 {
+                font-size: clamp(60px, 12vw, 90px);
+            }
+
+            .hero-lateral {
+                max-width: 420px;
+                padding: 0 0 0 20px;
+            }
+
+            .lateral-numero {
+                font-size: 32px;
+            }
+
+            .lateral-linha {
+                margin: 15px 0;
+            }
+
+            .hero-rodape {
+                right: 5%;
+                left: 5%;
+                bottom: 20px;
+            }
+
+            .conteudo {
+                padding-top: 65px;
+                padding-bottom: 60px;
+            }
+
+            .cabecalho-secao {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .resumo-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .secao-extra,
+            .secao-gerenciamento {
+                margin-top: 70px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero {
+                min-height: 790px;
+            }
+
+            .marca-simbolo {
+                width: 39px;
+                height: 39px;
+            }
+
+            .marca-texto strong {
+                font-size: 14px;
+            }
+
+            .navegacao {
+                gap: 9px 17px;
+            }
+
+            .hero-conteudo {
+                padding-top: 25px;
+                padding-bottom: 83px;
+            }
+
+            .hero-etiqueta {
+                margin-bottom: 20px;
+                font-size: 9px;
+                letter-spacing: 1.7px;
+            }
+
+            .hero h1 {
+                font-size: clamp(52px, 13.5vw, 66px);
+                letter-spacing: -0.065em;
+            }
+
+            .hero-descricao {
+                margin-top: 22px;
+                font-size: 13px;
+            }
+
+            .hero-acoes {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 18px;
+                margin-top: 26px;
+            }
+
+            .hero-lateral {
+                padding-left: 16px;
+            }
+
+            .lateral-numero {
+                font-size: 29px;
+            }
+
+            .hero-rodape {
+                font-size: 8px;
+                letter-spacing: 0.6px;
+            }
+
+            .hero-rodape .linha-rodape {
+                width: 15px;
+            }
+
+            .conteudo {
+                padding-right: 18px;
+                padding-left: 18px;
+            }
+
+            .titulo-secao {
+                font-size: 32px;
+            }
+
+            .indicadores {
+                grid-template-columns: 1fr;
                 gap: 12px;
             }
 
-            .indicadores,
+            .indicador {
+                min-height: 175px;
+            }
+
+            .indicador-numero {
+                font-size: 38px;
+            }
+
+            .bloco-resumo {
+                padding: 21px 16px;
+            }
+
+            .tabela-emprestimos {
+                min-width: 420px;
+            }
+
             .cartoes {
                 grid-template-columns: 1fr;
             }
 
-            .apresentacao h2 {
-                font-size: 32px;
+            .cartao {
+                min-height: 230px;
+            }
+
+            .rodape-conteudo {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 7px;
+                padding: 24px 18px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                scroll-behavior: auto !important;
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
             }
         }
     </style>
@@ -264,175 +1232,603 @@
 
 <body>
 
-<header>
-    <div class="cabecalho">
-        <div class="marca">
-            <h1>Biblioteca Inteligente</h1>
-            <p>Sistema de gerenciamento bibliotecário</p>
+    <!-- HERO PRINCIPAL -->
+    <section class="hero" id="inicio">
+
+        <div class="hero-fundo" aria-hidden="true"></div>
+        <div class="hero-gradiente" aria-hidden="true"></div>
+        <div class="hero-granulado" aria-hidden="true"></div>
+
+        <header class="topbar">
+
+            <a class="marca" href="{{ url_for('inicio') }}"
+               aria-label="Biblioteca Inteligente - Início">
+
+                <span class="marca-simbolo" aria-hidden="true">B.</span>
+
+                <span class="marca-texto">
+                    <strong>Biblioteca Inteligente</strong>
+                    <span>Conhecimento em movimento</span>
+                </span>
+
+            </a>
+
+            <nav class="navegacao" aria-label="Navegação principal">
+                <a href="{{ url_for('inicio') }}">Início</a>
+                <a href="{{ url_for('listar_livros') }}">Livros</a>
+                <a href="{{ url_for('listar_autores') }}">Autores</a>
+                <a href="{{ url_for('listar_alunos') }}">Alunos</a>
+                <a href="{{ url_for('listar_emprestimos') }}">Empréstimos</a>
+            </nav>
+
+        </header>
+
+        <div class="hero-conteudo">
+
+            <div class="hero-principal">
+
+                <div class="hero-etiqueta">
+                    Um espaço para descobrir
+                </div>
+
+                <h1>
+                    Biblioteca
+                    <span>Inteligente.</span>
+                </h1>
+
+                <p class="hero-descricao">
+                    Descubra histórias, explore conhecimentos e gerencie
+                    sua biblioteca em um só lugar. Cada livro abre uma
+                    nova possibilidade.
+                </p>
+
+                <div class="hero-acoes">
+
+                    <a class="botao-principal"
+                       href="{{ url_for('listar_livros') }}">
+
+                        Explorar biblioteca
+
+                        <span class="botao-seta" aria-hidden="true">↗</span>
+
+                    </a>
+
+                    <a class="link-secundario"
+                       href="#visao-geral">
+
+                        <span aria-hidden="true">↓</span>
+                        Conhecer o painel
+
+                    </a>
+
+                </div>
+
+            </div>
+
+            <aside class="hero-lateral">
+
+                <span class="lateral-numero">
+                    {{ total_livros }}
+                </span>
+
+                <span class="lateral-titulo">
+                    Livros no seu acervo
+                </span>
+
+                <p class="lateral-descricao">
+                    Um acervo organizado para facilitar a consulta,
+                    o acompanhamento e a gestão de cada livro.
+                </p>
+
+                <div class="lateral-linha"></div>
+
+                <p class="lateral-descricao">
+                    Organize seus registros. Acompanhe os empréstimos.
+                    Mantenha tudo em um só lugar.
+                </p>
+
+            </aside>
+
         </div>
 
-        <nav>
-            <a href="{{ url_for('inicio') }}">Início</a>
-            <a href="{{ url_for('listar_livros') }}">Livros</a>
-            <a href="{{ url_for('listar_autores') }}">Autores</a>
-            <a href="{{ url_for('listar_alunos') }}">Alunos</a>
-            <a href="{{ url_for('listar_emprestimos') }}">Empréstimos</a>
-        </nav>
-    </div>
-</header>
+        <div class="hero-rodape">
+            <span>
+                <span class="linha-rodape"></span>
+                Conhecimento sem limites
+            </span>
 
-<main>
+            <span>
+                Biblioteca · Gestão · Descoberta
+            </span>
+        </div>
 
-    {% with mensagens = get_flashed_messages() %}
-        {% if mensagens %}
-            {% for mensagem in mensagens %}
-                <div class="mensagem">{{ mensagem }}</div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <section class="apresentacao">
-        <span class="etiqueta">GERENCIAMENTO BIBLIOTECÁRIO</span>
-
-        <h2>Organize sua biblioteca em um só lugar.</h2>
-
-        <p>
-            Gerencie livros, autores e alunos, acompanhe os empréstimos
-            e registre as devoluções de maneira simples e organizada.
-        </p>
     </section>
 
-    <section>
-        <h2 class="secao-titulo">Visão geral</h2>
 
-        <p class="secao-descricao">
-            Acompanhe os principais números da sua biblioteca.
-        </p>
+    <!-- CONTEÚDO DO PAINEL -->
+    <main class="conteudo">
 
-        <div class="indicadores">
+        {% with mensagens = get_flashed_messages() %}
+            {% if mensagens %}
+                {% for mensagem in mensagens %}
+                    <div class="mensagem" role="status">
+                        {{ mensagem }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
 
-            <article class="indicador">
-                <div class="indicador-topo">
-                    <span class="indicador-label">Total de livros</span>
-                    <span class="indicador-icone">📚</span>
+
+        <!-- INDICADORES -->
+        <section id="visao-geral" aria-labelledby="titulo-visao-geral">
+
+            <div class="cabecalho-secao">
+
+                <div>
+                    <span class="sobrelinha">Painel administrativo</span>
+
+                    <h2 class="titulo-secao" id="titulo-visao-geral">
+                        Visão geral
+                    </h2>
+
+                    <p class="descricao-secao">
+                        Acompanhe os principais indicadores da sua
+                        biblioteca em tempo real, com informações
+                        obtidas diretamente do banco de dados.
+                    </p>
                 </div>
-                <div class="indicador-numero">{{ total_livros }}</div>
-                <p class="indicador-legenda">Livros cadastrados no acervo</p>
-            </article>
 
-            <article class="indicador">
-                <div class="indicador-topo">
-                    <span class="indicador-label">Total de autores</span>
-                    <span class="indicador-icone">✍️</span>
-                </div>
-                <div class="indicador-numero">{{ total_autores }}</div>
-                <p class="indicador-legenda">Autores cadastrados</p>
-            </article>
+                <a class="link-secao"
+                   href="{{ url_for('listar_emprestimos') }}">
 
-            <article class="indicador">
-                <div class="indicador-topo">
-                    <span class="indicador-label">Total de alunos</span>
-                    <span class="indicador-icone">🎓</span>
-                </div>
-                <div class="indicador-numero">{{ total_alunos }}</div>
-                <p class="indicador-legenda">Alunos cadastrados</p>
-            </article>
+                    Consultar empréstimos
+                    <span aria-hidden="true">→</span>
 
-            <article class="indicador">
-                <div class="indicador-topo">
-                    <span class="indicador-label">Empréstimos registrados</span>
-                    <span class="indicador-icone">📖</span>
-                </div>
-                <div class="indicador-numero">{{ total_emprestimos }}</div>
-                <p class="indicador-legenda">Total de registros de empréstimos</p>
-            </article>
+                </a>
 
-            <article class="indicador">
-                <div class="indicador-topo">
-                    <span class="indicador-label">Empréstimos pendentes</span>
-                    <span class="indicador-icone">⏳</span>
-                </div>
-                <div class="indicador-numero">{{ emprestimos_pendentes }}</div>
-                <p class="indicador-legenda">Aguardando devolução</p>
-            </article>
+            </div>
 
-            <article class="indicador">
-                <div class="indicador-topo">
-                    <span class="indicador-label">Empréstimos devolvidos</span>
-                    <span class="indicador-icone">✅</span>
+
+            <div class="indicadores">
+
+                <article class="indicador indicador-destaque">
+
+                    <div class="indicador-topo">
+                        <span class="indicador-label">Livros disponíveis</span>
+                        <span class="indicador-icone" aria-hidden="true">▤</span>
+                    </div>
+
+                    <div class="indicador-numero">
+                        {{ livros_disponiveis }}
+                    </div>
+
+                    <p class="indicador-legenda">
+                        Sem empréstimos pendentes associados
+                    </p>
+
+                </article>
+
+
+                <article class="indicador">
+
+                    <div class="indicador-topo">
+                        <span class="indicador-label">Total de livros</span>
+                        <span class="indicador-icone" aria-hidden="true">▥</span>
+                    </div>
+
+                    <div class="indicador-numero">
+                        {{ total_livros }}
+                    </div>
+
+                    <p class="indicador-legenda">
+                        Livros cadastrados no acervo
+                    </p>
+
+                </article>
+
+
+                <article class="indicador">
+
+                    <div class="indicador-topo">
+                        <span class="indicador-label">Autores</span>
+                        <span class="indicador-icone" aria-hidden="true">✎</span>
+                    </div>
+
+                    <div class="indicador-numero">
+                        {{ total_autores }}
+                    </div>
+
+                    <p class="indicador-legenda">
+                        Autores cadastrados
+                    </p>
+
+                </article>
+
+
+                <article class="indicador">
+
+                    <div class="indicador-topo">
+                        <span class="indicador-label">Alunos</span>
+                        <span class="indicador-icone" aria-hidden="true">♙</span>
+                    </div>
+
+                    <div class="indicador-numero">
+                        {{ total_alunos }}
+                    </div>
+
+                    <p class="indicador-legenda">
+                        Alunos cadastrados
+                    </p>
+
+                </article>
+
+
+                <article class="indicador">
+
+                    <div class="indicador-topo">
+                        <span class="indicador-label">Empréstimos registrados</span>
+                        <span class="indicador-icone" aria-hidden="true">↗</span>
+                    </div>
+
+                    <div class="indicador-numero">
+                        {{ total_emprestimos }}
+                    </div>
+
+                    <p class="indicador-legenda">
+                        Total de registros no sistema
+                    </p>
+
+                </article>
+
+
+                <article class="indicador">
+
+                    <div class="indicador-topo">
+                        <span class="indicador-label">Pendentes</span>
+                        <span class="indicador-icone" aria-hidden="true">◷</span>
+                    </div>
+
+                    <div class="indicador-numero">
+                        {{ emprestimos_pendentes }}
+                    </div>
+
+                    <p class="indicador-legenda">
+                        Aguardando devolução
+                    </p>
+
+                </article>
+
+
+                <article class="indicador">
+
+                    <div class="indicador-topo">
+                        <span class="indicador-label">Devolvidos</span>
+                        <span class="indicador-icone" aria-hidden="true">✓</span>
+                    </div>
+
+                    <div class="indicador-numero">
+                        {{ emprestimos_devolvidos }}
+                    </div>
+
+                    <p class="indicador-legenda">
+                        Empréstimos finalizados
+                    </p>
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESUMO DOS EMPRÉSTIMOS -->
+        <section class="secao-extra" id="resumo"
+                 aria-labelledby="titulo-resumo">
+
+            <div class="cabecalho-secao">
+
+                <div>
+                    <span class="sobrelinha">Acompanhamento</span>
+
+                    <h2 class="titulo-secao" id="titulo-resumo">
+                        Atividade da biblioteca
+                    </h2>
+
+                    <p class="descricao-secao">
+                        Consulte a situação dos empréstimos e acompanhe
+                        os registros mais recentes.
+                    </p>
                 </div>
-                <div class="indicador-numero">{{ emprestimos_devolvidos }}</div>
-                <p class="indicador-legenda">Empréstimos finalizados</p>
-            </article>
+
+            </div>
+
+
+            <div class="resumo-grid">
+
+                <!-- DISTRIBUIÇÃO -->
+                <article class="bloco-resumo">
+
+                    <div class="bloco-cabecalho">
+
+                        <div>
+                            <h3>Resumo dos empréstimos</h3>
+
+                            <p>
+                                Distribuição por situação
+                            </p>
+                        </div>
+
+                        <span class="bloco-icone" aria-hidden="true">◷</span>
+
+                    </div>
+
+
+                    <div class="barra-legenda">
+
+                        <span class="barra-nome">
+                            <span class="ponto-status"></span>
+                            Pendentes
+                        </span>
+
+                        <strong>
+                            {{ emprestimos_pendentes }}
+                            ({{ ((emprestimos_pendentes / total_emprestimos * 100) if total_emprestimos else 0) | round | int }}%)
+                        </strong>
+
+                    </div>
+
+                    <div class="barra-fundo"
+                         role="img"
+                         aria-label="Percentual de empréstimos pendentes">
+
+                        <div class="barra-preenchida"
+                             style="width: {{ ((emprestimos_pendentes / total_emprestimos * 100) if total_emprestimos else 0) | round | int }}%;">
+                        </div>
+
+                    </div>
+
+
+                    <div class="barra-legenda">
+
+                        <span class="barra-nome">
+                            <span class="ponto-status devolvido"></span>
+                            Devolvidos
+                        </span>
+
+                        <strong>
+                            {{ emprestimos_devolvidos }}
+                            ({{ ((emprestimos_devolvidos / total_emprestimos * 100) if total_emprestimos else 0) | round | int }}%)
+                        </strong>
+
+                    </div>
+
+                    <div class="barra-fundo"
+                         role="img"
+                         aria-label="Percentual de empréstimos devolvidos">
+
+                        <div class="barra-preenchida devolvidos"
+                             style="width: {{ ((emprestimos_devolvidos / total_emprestimos * 100) if total_emprestimos else 0) | round | int }}%;">
+                        </div>
+
+                    </div>
+
+                    <p class="nota-resumo">
+                        Os percentuais são calculados sobre o total de
+                        empréstimos registrados no banco de dados.
+                    </p>
+
+                </article>
+
+
+                <!-- ÚLTIMOS EMPRÉSTIMOS -->
+                <article class="bloco-resumo">
+
+                    <div class="bloco-cabecalho">
+
+                        <div>
+                            <h3>Últimos empréstimos</h3>
+
+                            <p>
+                                Os cinco registros mais recentes
+                            </p>
+                        </div>
+
+                        <span class="bloco-icone" aria-hidden="true">↗</span>
+
+                    </div>
+
+
+                    {% if ultimos_emprestimos %}
+
+                        <div class="tabela-responsiva">
+
+                            <table class="tabela-emprestimos">
+
+                                <thead>
+                                    <tr>
+                                        <th>Aluno</th>
+                                        <th>Livro</th>
+                                        <th>Situação</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+
+                                    {% for emprestimo in ultimos_emprestimos %}
+
+                                        <tr>
+
+                                            <td>
+                                                <span class="aluno-nome">
+                                                    {{ emprestimo.NOME_ALUNO or 'Aluno não identificado' }}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span class="livro-titulo">
+                                                    {{ emprestimo.TITULO_LIVRO or 'Livro não identificado' }}
+                                                </span>
+                                            </td>
+
+                                            <td>
+                                                <span class="status {% if emprestimo.STATUS == 'DEVOLVIDO' %}devolvido{% endif %}">
+                                                    {{ emprestimo.STATUS or 'Sem situação' }}
+                                                </span>
+                                            </td>
+
+                                        </tr>
+
+                                    {% endfor %}
+
+                                </tbody>
+
+                            </table>
+
+                        </div>
+
+                    {% else %}
+
+                        <p class="sem-registros">
+                            Nenhum empréstimo registrado até o momento.
+                        </p>
+
+                    {% endif %}
+
+                </article>
+
+            </div>
+
+        </section>
+
+
+        <!-- ÁREAS DO SISTEMA -->
+        <section class="secao-gerenciamento" id="gerenciamento"
+                 aria-labelledby="titulo-gerenciamento">
+
+            <div class="cabecalho-secao">
+
+                <div>
+                    <span class="sobrelinha">Acesso rápido</span>
+
+                    <h2 class="titulo-secao" id="titulo-gerenciamento">
+                        Gerencie sua biblioteca
+                    </h2>
+
+                    <p class="descricao-secao">
+                        Acesse as áreas do sistema para cadastrar,
+                        consultar e organizar os registros.
+                    </p>
+                </div>
+
+            </div>
+
+
+            <div class="cartoes">
+
+
+                <a class="cartao"
+                   href="{{ url_for('listar_livros') }}">
+
+                    <span class="cartao-icone" aria-hidden="true">▥</span>
+
+                    <h3>Livros</h3>
+
+                    <p>
+                        Consulte o acervo, cadastre novos títulos,
+                        pesquise livros e atualize os registros existentes.
+                    </p>
+
+                    <span class="cartao-rodape">
+                        Gerenciar livros
+                        <span class="cartao-seta" aria-hidden="true">↗</span>
+                    </span>
+
+                </a>
+
+
+                <a class="cartao"
+                   href="{{ url_for('listar_autores') }}">
+
+                    <span class="cartao-icone" aria-hidden="true">✎</span>
+
+                    <h3>Autores</h3>
+
+                    <p>
+                        Organize os autores cadastrados e mantenha
+                        suas informações atualizadas.
+                    </p>
+
+                    <span class="cartao-rodape">
+                        Gerenciar autores
+                        <span class="cartao-seta" aria-hidden="true">↗</span>
+                    </span>
+
+                </a>
+
+
+                <a class="cartao"
+                   href="{{ url_for('listar_alunos') }}">
+
+                    <span class="cartao-icone" aria-hidden="true">♙</span>
+
+                    <h3>Alunos</h3>
+
+                    <p>
+                        Consulte os alunos cadastrados e mantenha
+                        os dados dos usuários da biblioteca organizados.
+                    </p>
+
+                    <span class="cartao-rodape">
+                        Gerenciar alunos
+                        <span class="cartao-seta" aria-hidden="true">↗</span>
+                    </span>
+
+                </a>
+
+
+                <a class="cartao"
+                   href="{{ url_for('listar_emprestimos') }}">
+
+                    <span class="cartao-icone" aria-hidden="true">↗</span>
+
+                    <h3>Empréstimos</h3>
+
+                    <p>
+                        Registre empréstimos, acompanhe os livros
+                        emprestados e consulte as devoluções.
+                    </p>
+
+                    <span class="cartao-rodape">
+                        Gerenciar empréstimos
+                        <span class="cartao-seta" aria-hidden="true">↗</span>
+                    </span>
+
+                </a>
+
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- RODAPÉ -->
+    <footer>
+
+        <div class="rodape-conteudo">
+
+            <span class="rodape-marca">
+                Biblioteca Inteligente
+            </span>
+
+            <span class="rodape-descricao">
+                Conhecimento, organização e tecnologia.
+            </span>
 
         </div>
-    </section>
 
-    <section class="painel">
-        <h2 class="secao-titulo">Painel de gerenciamento</h2>
-
-        <p class="secao-descricao">
-            Escolha uma das áreas abaixo para acessar as funcionalidades do sistema.
-        </p>
-
-        <div class="cartoes">
-
-            <article class="cartao">
-                <div class="cartao-icone">📚</div>
-                <h3>Livros</h3>
-                <p>
-                    Cadastre novos livros, consulte o acervo, pesquise
-                    títulos e gerencie os registros existentes.
-                </p>
-                <a class="botao" href="{{ url_for('listar_livros') }}">
-                    Gerenciar livros
-                </a>
-            </article>
-
-            <article class="cartao">
-                <div class="cartao-icone">✍️</div>
-                <h3>Autores</h3>
-                <p>
-                    Consulte os autores cadastrados, registre novos nomes
-                    e mantenha suas informações organizadas.
-                </p>
-                <a class="botao" href="{{ url_for('listar_autores') }}">
-                    Gerenciar autores
-                </a>
-            </article>
-
-            <article class="cartao">
-                <div class="cartao-icone">🎓</div>
-                <h3>Alunos</h3>
-                <p>
-                    Cadastre alunos, consulte seus dados e atualize
-                    informações dos usuários da biblioteca.
-                </p>
-                <a class="botao" href="{{ url_for('listar_alunos') }}">
-                    Gerenciar alunos
-                </a>
-            </article>
-
-            <article class="cartao">
-                <div class="cartao-icone">📖</div>
-                <h3>Empréstimos</h3>
-                <p>
-                    Registre empréstimos de livros, consulte os alunos
-                    responsáveis e acompanhe as devoluções.
-                </p>
-                <a class="botao" href="{{ url_for('listar_emprestimos') }}">
-                    Gerenciar empréstimos
-                </a>
-            </article>
-
-        </div>
-    </section>
-
-</main>
-
-<footer>
-    Biblioteca Inteligente · Sistema de gerenciamento bibliotecário
-</footer>
+    </footer>
 
 </body>
 </html>
