@@ -92,37 +92,35 @@ def cadastrar_livro():
     ).strip()
     autor = request.form.get("autor", "").strip()
 
+    dados = {
+        "titulo": titulo,
+        "ano_publicacao": ano_publicacao,
+        "autor": autor
+    }
+
     if not titulo or not ano_publicacao:
         flash("Preencha o título e a data de publicação.", "erro")
-        return render_template(
-            "cadastrar_livro.html",
-            titulo=titulo,
-            ano_publicacao=ano_publicacao,
-            autor=autor
-        ), 400
+        return render_template("cadastrar_livro.html", **dados), 400
 
     if len(titulo) > 45 or len(autor) > 45:
         flash(
             "Título e autor devem ter no máximo 45 caracteres.",
             "erro"
         )
-        return render_template(
-            "cadastrar_livro.html",
-            titulo=titulo,
-            ano_publicacao=ano_publicacao,
-            autor=autor
-        ), 400
+        return render_template("cadastrar_livro.html", **dados), 400
 
     try:
-        date.fromisoformat(ano_publicacao)
+        data_publicacao = date.fromisoformat(ano_publicacao)
+
+        if data_publicacao > date.today():
+            flash("A data de publicação não pode ser futura.", "erro")
+            return render_template(
+                "cadastrar_livro.html", **dados
+            ), 400
+
     except ValueError:
         flash("Informe uma data de publicação válida.", "erro")
-        return render_template(
-            "cadastrar_livro.html",
-            titulo=titulo,
-            ano_publicacao=ano_publicacao,
-            autor=autor
-        ), 400
+        return render_template("cadastrar_livro.html", **dados), 400
 
     conexao = conectar()
 
@@ -139,7 +137,7 @@ def cadastrar_livro():
             INSERT INTO livros (TITULO, ANO_PUBLICACAO, AUTOR)
             VALUES (%s, %s, %s)
             """,
-            (titulo, ano_publicacao, autor or None)
+            (titulo, data_publicacao, autor or None)
         )
 
         conexao.commit()
@@ -151,13 +149,7 @@ def cadastrar_livro():
         conexao.rollback()
         app.logger.exception("Erro ao cadastrar o livro.")
         flash("Não foi possível cadastrar o livro.", "erro")
-
-        return render_template(
-            "cadastrar_livro.html",
-            titulo=titulo,
-            ano_publicacao=ano_publicacao,
-            autor=autor
-        ), 400
+        return render_template("cadastrar_livro.html", **dados), 400
 
     finally:
         if cursor is not None:
@@ -200,49 +192,35 @@ def editar_livro(id_livro):
         ).strip()
         autor = request.form.get("autor", "").strip()
 
+        livro.update({
+            "TITULO": titulo,
+            "ANO_PUBLICACAO": ano_publicacao,
+            "AUTOR": autor
+        })
+
         if not titulo or not ano_publicacao:
             flash("Preencha o título e a data de publicação.", "erro")
-            livro.update({
-                "TITULO": titulo,
-                "AUTOR": autor,
-                "ANO_PUBLICACAO": ano_publicacao
-            })
-
-            return render_template(
-                "editar_livro.html",
-                livro=livro
-            ), 400
+            return render_template("editar_livro.html", livro=livro), 400
 
         if len(titulo) > 45 or len(autor) > 45:
             flash(
                 "Título e autor devem ter no máximo 45 caracteres.",
                 "erro"
             )
-            livro.update({
-                "TITULO": titulo,
-                "AUTOR": autor,
-                "ANO_PUBLICACAO": ano_publicacao
-            })
-
-            return render_template(
-                "editar_livro.html",
-                livro=livro
-            ), 400
+            return render_template("editar_livro.html", livro=livro), 400
 
         try:
-            date.fromisoformat(ano_publicacao)
+            data_publicacao = date.fromisoformat(ano_publicacao)
+
+            if data_publicacao > date.today():
+                flash("A data de publicação não pode ser futura.", "erro")
+                return render_template(
+                    "editar_livro.html", livro=livro
+                ), 400
+
         except ValueError:
             flash("Informe uma data de publicação válida.", "erro")
-            livro.update({
-                "TITULO": titulo,
-                "AUTOR": autor,
-                "ANO_PUBLICACAO": ano_publicacao
-            })
-
-            return render_template(
-                "editar_livro.html",
-                livro=livro
-            ), 400
+            return render_template("editar_livro.html", livro=livro), 400
 
         cursor.execute(
             """
@@ -252,19 +230,17 @@ def editar_livro(id_livro):
                 AUTOR = %s
             WHERE ID_LIVRO = %s
             """,
-            (titulo, ano_publicacao, autor or None, id_livro)
+            (titulo, data_publicacao, autor or None, id_livro)
         )
 
         conexao.commit()
         flash("Livro atualizado com sucesso!", "sucesso")
-
         return redirect(url_for("listar_livros"))
 
     except Exception:
         conexao.rollback()
         app.logger.exception("Erro ao editar o livro.")
         flash("Não foi possível atualizar o livro.", "erro")
-
         return redirect(url_for("listar_livros"))
 
     finally:
@@ -387,10 +363,7 @@ def cadastrar_autor():
     hoje = date.today().isoformat()
 
     if request.method == "GET":
-        return render_template(
-            "cadastrar_autor.html",
-            hoje=hoje
-        )
+        return render_template("cadastrar_autor.html", hoje=hoje)
 
     nome = request.form.get("nome", "").strip()
     filosofia = request.form.get("filosofia", "").strip()
@@ -407,47 +380,29 @@ def cadastrar_autor():
 
     if not nome or not filosofia or not data_nascimento:
         flash("Preencha todos os campos do formulário.", "erro")
-        return render_template(
-            "cadastrar_autor.html",
-            **dados
-        ), 400
+        return render_template("cadastrar_autor.html", **dados), 400
 
     if len(nome) > 45:
         flash("O nome deve ter no máximo 45 caracteres.", "erro")
-        return render_template(
-            "cadastrar_autor.html",
-            **dados
-        ), 400
+        return render_template("cadastrar_autor.html", **dados), 400
 
     if len(filosofia) > 100:
         flash(
             "A filosofia do autor deve ter no máximo 100 caracteres.",
             "erro"
         )
-        return render_template(
-            "cadastrar_autor.html",
-            **dados
-        ), 400
+        return render_template("cadastrar_autor.html", **dados), 400
 
     try:
         nascimento = date.fromisoformat(data_nascimento)
 
         if nascimento > date.today():
-            flash(
-                "A data de nascimento não pode ser futura.",
-                "erro"
-            )
-            return render_template(
-                "cadastrar_autor.html",
-                **dados
-            ), 400
+            flash("A data de nascimento não pode ser futura.", "erro")
+            return render_template("cadastrar_autor.html", **dados), 400
 
     except ValueError:
         flash("Informe uma data de nascimento válida.", "erro")
-        return render_template(
-            "cadastrar_autor.html",
-            **dados
-        ), 400
+        return render_template("cadastrar_autor.html", **dados), 400
 
     conexao = conectar()
 
@@ -470,28 +425,19 @@ def cadastrar_autor():
 
         conexao.commit()
         flash("Autor cadastrado com sucesso!", "sucesso")
-
         return redirect(url_for("listar_autores"))
 
     except Exception:
         conexao.rollback()
         app.logger.exception("Erro ao cadastrar o autor.")
         flash("Não foi possível cadastrar o autor.", "erro")
-
-        return render_template(
-            "cadastrar_autor.html",
-            **dados
-        ), 400
+        return render_template("cadastrar_autor.html", **dados), 400
 
     finally:
         if cursor is not None:
             cursor.close()
         conexao.close()
 
-
-# ==================================================
-# EDITAR AUTORES
-# ==================================================
 
 @app.route("/autores/editar/<int:id_autor>", methods=["GET", "POST"])
 def editar_autor(id_autor):
@@ -545,17 +491,13 @@ def editar_autor(id_autor):
         if not nome or not filosofia or not data_nascimento:
             flash("Preencha todos os campos.", "erro")
             return render_template(
-                "editar_autor.html",
-                autor=dados,
-                hoje=hoje
+                "editar_autor.html", autor=dados, hoje=hoje
             ), 400
 
         if len(nome) > 45:
             flash("O nome deve ter no máximo 45 caracteres.", "erro")
             return render_template(
-                "editar_autor.html",
-                autor=dados,
-                hoje=hoje
+                "editar_autor.html", autor=dados, hoje=hoje
             ), 400
 
         if len(filosofia) > 100:
@@ -564,31 +506,22 @@ def editar_autor(id_autor):
                 "erro"
             )
             return render_template(
-                "editar_autor.html",
-                autor=dados,
-                hoje=hoje
+                "editar_autor.html", autor=dados, hoje=hoje
             ), 400
 
         try:
             nascimento = date.fromisoformat(data_nascimento)
 
             if nascimento > date.today():
-                flash(
-                    "A data de nascimento não pode ser futura.",
-                    "erro"
-                )
+                flash("A data de nascimento não pode ser futura.", "erro")
                 return render_template(
-                    "editar_autor.html",
-                    autor=dados,
-                    hoje=hoje
+                    "editar_autor.html", autor=dados, hoje=hoje
                 ), 400
 
         except ValueError:
             flash("Informe uma data válida.", "erro")
             return render_template(
-                "editar_autor.html",
-                autor=dados,
-                hoje=hoje
+                "editar_autor.html", autor=dados, hoje=hoje
             ), 400
 
         cursor.execute(
@@ -604,7 +537,6 @@ def editar_autor(id_autor):
 
         conexao.commit()
         flash("Autor atualizado com sucesso!", "sucesso")
-
         return redirect(url_for("listar_autores"))
 
     except Exception:
@@ -618,10 +550,6 @@ def editar_autor(id_autor):
             cursor.close()
         conexao.close()
 
-
-# ==================================================
-# EXCLUIR AUTORES
-# ==================================================
 
 @app.route("/autores/excluir/<int:id_autor>", methods=["POST"])
 def excluir_autor(id_autor):
@@ -673,6 +601,325 @@ def excluir_autor(id_autor):
 
     return redirect(url_for("listar_autores"))
 
+
+# ==================================================
+# ALUNOS
+# ==================================================
+
+def calcular_idade(data_nascimento):
+    hoje = date.today()
+    idade = hoje.year - data_nascimento.year
+
+    if (hoje.month, hoje.day) < (
+        data_nascimento.month,
+        data_nascimento.day
+    ):
+        idade -= 1
+
+    return idade
+
+
+@app.route("/alunos")
+def listar_alunos():
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+        busca = request.args.get("busca", "").strip()
+
+        if busca:
+            cursor.execute(
+                """
+                SELECT ID_ALUNO, NOME, IDADE, DATA_NASCIMENTO
+                FROM aluno
+                WHERE NOME LIKE %s
+                ORDER BY NOME
+                """,
+                (f"%{busca}%",)
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT ID_ALUNO, NOME, IDADE, DATA_NASCIMENTO
+                FROM aluno
+                ORDER BY NOME
+                """
+            )
+
+        alunos = cursor.fetchall()
+
+        return render_template(
+            "alunos.html",
+            alunos=alunos,
+            busca=busca
+        )
+
+    except Exception:
+        app.logger.exception("Erro ao consultar os alunos.")
+        return "Ocorreu um erro ao consultar os alunos.", 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+
+@app.route("/alunos/cadastrar", methods=["GET", "POST"])
+def cadastrar_aluno():
+    hoje = date.today().isoformat()
+
+    if request.method == "GET":
+        return render_template("cadastrar_aluno.html", hoje=hoje)
+
+    nome = request.form.get("nome", "").strip()
+    data_nascimento = request.form.get(
+        "data_nascimento", ""
+    ).strip()
+
+    dados = {
+        "nome": nome,
+        "data_nascimento": data_nascimento,
+        "hoje": hoje
+    }
+
+    if not nome or not data_nascimento:
+        flash("Preencha todos os campos.", "erro")
+        return render_template("cadastrar_aluno.html", **dados), 400
+
+    if len(nome) > 45:
+        flash("O nome deve ter no máximo 45 caracteres.", "erro")
+        return render_template("cadastrar_aluno.html", **dados), 400
+
+    try:
+        nascimento = date.fromisoformat(data_nascimento)
+
+        if nascimento > date.today():
+            flash("A data de nascimento não pode ser futura.", "erro")
+            return render_template("cadastrar_aluno.html", **dados), 400
+
+        idade = calcular_idade(nascimento)
+
+        if idade > 120:
+            flash("Confira a data de nascimento informada.", "erro")
+            return render_template("cadastrar_aluno.html", **dados), 400
+
+    except ValueError:
+        flash("Informe uma data de nascimento válida.", "erro")
+        return render_template("cadastrar_aluno.html", **dados), 400
+
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO aluno (NOME, IDADE, DATA_NASCIMENTO)
+            VALUES (%s, %s, %s)
+            """,
+            (nome, idade, nascimento)
+        )
+
+        conexao.commit()
+        flash("Aluno cadastrado com sucesso!", "sucesso")
+        return redirect(url_for("listar_alunos"))
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro ao cadastrar o aluno.")
+        flash("Não foi possível cadastrar o aluno.", "erro")
+        return render_template("cadastrar_aluno.html", **dados), 400
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+
+@app.route("/alunos/editar/<int:id_aluno>", methods=["GET", "POST"])
+def editar_aluno(id_aluno):
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+
+        cursor.execute(
+            """
+            SELECT ID_ALUNO, NOME, IDADE, DATA_NASCIMENTO
+            FROM aluno
+            WHERE ID_ALUNO = %s
+            """,
+            (id_aluno,)
+        )
+
+        aluno = cursor.fetchone()
+
+        if aluno is None:
+            abort(404)
+
+        hoje = date.today().isoformat()
+
+        if request.method == "GET":
+            return render_template(
+                "editar_aluno.html",
+                aluno=aluno,
+                hoje=hoje
+            )
+
+        nome = request.form.get("nome", "").strip()
+        data_nascimento = request.form.get(
+            "data_nascimento", ""
+        ).strip()
+
+        dados = {
+            "ID_ALUNO": id_aluno,
+            "NOME": nome,
+            "IDADE": aluno["IDADE"],
+            "DATA_NASCIMENTO": data_nascimento
+        }
+
+        if not nome or not data_nascimento:
+            flash("Preencha todos os campos.", "erro")
+            return render_template(
+                "editar_aluno.html",
+                aluno=dados,
+                hoje=hoje
+            ), 400
+
+        if len(nome) > 45:
+            flash("O nome deve ter no máximo 45 caracteres.", "erro")
+            return render_template(
+                "editar_aluno.html",
+                aluno=dados,
+                hoje=hoje
+            ), 400
+
+        try:
+            nascimento = date.fromisoformat(data_nascimento)
+
+            if nascimento > date.today():
+                flash("A data de nascimento não pode ser futura.", "erro")
+                return render_template(
+                    "editar_aluno.html",
+                    aluno=dados,
+                    hoje=hoje
+                ), 400
+
+            idade = calcular_idade(nascimento)
+
+            if idade > 120:
+                flash("Confira a data de nascimento informada.", "erro")
+                return render_template(
+                    "editar_aluno.html",
+                    aluno=dados,
+                    hoje=hoje
+                ), 400
+
+        except ValueError:
+            flash("Informe uma data de nascimento válida.", "erro")
+            return render_template(
+                "editar_aluno.html",
+                aluno=dados,
+                hoje=hoje
+            ), 400
+
+        cursor.execute(
+            """
+            UPDATE aluno
+            SET NOME = %s,
+                IDADE = %s,
+                DATA_NASCIMENTO = %s
+            WHERE ID_ALUNO = %s
+            """,
+            (nome, idade, nascimento, id_aluno)
+        )
+
+        conexao.commit()
+        flash("Aluno atualizado com sucesso!", "sucesso")
+        return redirect(url_for("listar_alunos"))
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro ao editar o aluno.")
+        flash("Não foi possível atualizar o aluno.", "erro")
+        return redirect(url_for("listar_alunos"))
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+
+@app.route("/alunos/excluir/<int:id_aluno>", methods=["POST"])
+def excluir_aluno(id_aluno):
+    conexao = conectar()
+
+    if conexao is None:
+        flash("Não foi possível conectar ao banco de dados.", "erro")
+        return redirect(url_for("listar_alunos"))
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            "DELETE FROM aluno WHERE ID_ALUNO = %s",
+            (id_aluno,)
+        )
+
+        if cursor.rowcount == 0:
+            conexao.rollback()
+            flash("O aluno não foi encontrado.", "erro")
+        else:
+            conexao.commit()
+            flash("Aluno excluído com sucesso!", "sucesso")
+
+    except Error as erro:
+        conexao.rollback()
+        app.logger.exception("Erro ao excluir o aluno.")
+
+        if getattr(erro, "errno", None) == 1451:
+            flash(
+                "Este aluno possui registros vinculados, possivelmente "
+                "empréstimos. Não é possível excluí-lo enquanto esses "
+                "vínculos existirem.",
+                "erro"
+            )
+        else:
+            flash("Não foi possível excluir o aluno.", "erro")
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro inesperado ao excluir o aluno.")
+        flash("Ocorreu um erro inesperado ao excluir o aluno.", "erro")
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+    return redirect(url_for("listar_alunos"))
+
+
+# ==================================================
+# EXECUTAR A APLICAÇÃO
+# ==================================================
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)

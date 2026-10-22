@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Alunos | Biblioteca Inteligente</title>
+
+    <style>
+        :root {
+            --preto: #11120D;
+            --cinza: #565449;
+            --bege: #D8CFBC;
+            --branco: #FFFBF4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            padding: 35px 5%;
+            background: var(--preto);
+            color: var(--branco);
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .topo {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--bege);
+            margin-bottom: 10px;
+        }
+
+        .subtitulo {
+            color: var(--bege);
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .botao {
+            display: inline-block;
+            padding: 11px 16px;
+            border: 1px solid var(--bege);
+            border-radius: 8px;
+            background: var(--bege);
+            color: var(--preto);
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .botao:hover {
+            opacity: 0.85;
+        }
+
+        .botao-secundario {
+            background: transparent;
+            color: var(--branco);
+        }
+
+        .botao-excluir {
+            border-color: #b95c50;
+            background: #b95c50;
+            color: white;
+        }
+
+        .pesquisa {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+
+        input {
+            width: 100%;
+            min-width: 0;
+            padding: 12px;
+            border: 1px solid var(--cinza);
+            border-radius: 8px;
+            background: #1b1c16;
+            color: var(--branco);
+            font-size: 15px;
+        }
+
+        input:focus {
+            outline: 1px solid var(--bege);
+        }
+
+        .mensagem {
+            margin-bottom: 18px;
+            padding: 13px;
+            border-radius: 8px;
+            background: var(--cinza);
+        }
+
+        .tabela-container {
+            overflow-x: auto;
+            border: 1px solid var(--cinza);
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 750px;
+        }
+
+        th, td {
+            padding: 15px;
+            border-bottom: 1px solid var(--cinza);
+            text-align: left;
+        }
+
+        th {
+            background: #292a22;
+            color: var(--bege);
+        }
+
+        td {
+            background: #1b1c16;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .acoes form {
+            margin: 0;
+        }
+
+        .vazio {
+            padding: 25px;
+            color: var(--bege);
+            text-align: center;
+        }
+
+        .voltar {
+            display: inline-block;
+            margin-top: 25px;
+            color: var(--bege);
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 25px 4%;
+            }
+
+            .topo {
+                align-items: flex-start;
+            }
+
+            .pesquisa {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="container">
+        <header class="topo">
+            <div>
+                <h1>Alunos</h1>
+                <p class="subtitulo">
+                    Consulte e gerencie os alunos cadastrados.
+                </p>
+            </div>
+
+            <a class="botao"
+               href="{{ url_for('cadastrar_aluno') }}">
+                + Cadastrar aluno
+            </a>
+        </header>
+
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+            {% for categoria, mensagem in mensagens %}
+                <div class="mensagem" role="status">
+                    {{ mensagem }}
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        <form class="pesquisa"
+              method="GET"
+              action="{{ url_for('listar_alunos') }}">
+
+            <input
+                type="search"
+                name="busca"
+                placeholder="Pesquisar aluno pelo nome..."
+                value="{{ busca }}"
+                aria-label="Pesquisar aluno pelo nome"
+            >
+
+            <button class="botao" type="submit">
+                Pesquisar
+            </button>
+
+            {% if busca %}
+                <a class="botao botao-secundario"
+                   href="{{ url_for('listar_alunos') }}">
+                    Limpar
+                </a>
+            {% endif %}
+        </form>
+
+        <div class="tabela-container">
+            {% if alunos %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Idade</th>
+                            <th>Data de nascimento</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for aluno in alunos %}
+                            <tr>
+                                <td>{{ aluno.ID_ALUNO }}</td>
+                                <td>{{ aluno.NOME }}</td>
+                                <td>{{ aluno.IDADE }}</td>
+                                <td>
+                                    {% if aluno.DATA_NASCIMENTO %}
+                                        {{ aluno.DATA_NASCIMENTO.strftime('%d/%m/%Y') }}
+                                    {% else %}
+                                        —
+                                    {% endif %}
+                                </td>
+
+                                <td>
+                                    <div class="acoes">
+                                        <a
+                                            class="botao botao-secundario"
+                                            href="{{ url_for(
+                                                'editar_aluno',
+                                                id_aluno=aluno.ID_ALUNO
+                                            ) }}">
+                                            Editar
+                                        </a>
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'excluir_aluno',
+                                                id_aluno=aluno.ID_ALUNO
+                                            ) }}"
+                                            onsubmit="return confirm(
+                                                'Tem certeza de que deseja excluir este aluno?'
+                                            );">
+
+                                            <button
+                                                class="botao botao-excluir"
+                                                type="submit">
+                                                Excluir
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p class="vazio">
+                    {% if busca %}
+                        Nenhum aluno encontrado para "{{ busca }}".
+                    {% else %}
+                        Nenhum aluno cadastrado até o momento.
+                    {% endif %}
+                </p>
+            {% endif %}
+        </div>
+
+        <a class="voltar" href="{{ url_for('inicio') }}">
+            ← Voltar para a página inicial
+        </a>
+    </main>
+</body>
+</html>
