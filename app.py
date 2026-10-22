@@ -27,6 +27,10 @@ def inicio():
     return render_template("index.html")
 
 
+# ==================================================
+# LIVROS
+# ==================================================
+
 @app.route("/livros")
 def listar_livros():
     conexao = conectar()
@@ -319,6 +323,170 @@ def excluir_livro(id_livro):
         conexao.close()
 
     return redirect(url_for("listar_livros"))
+
+
+# ==================================================
+# AUTORES
+# ==================================================
+
+@app.route("/autores")
+def listar_autores():
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor(dictionary=True)
+        busca = request.args.get("busca", "").strip()
+
+        if busca:
+            cursor.execute(
+                """
+                SELECT ID_AUTOR, NOME, FILOSOFIA_DO_AUTOR,
+                       DATA_NASCIMENTO
+                FROM autor
+                WHERE NOME LIKE %s
+                   OR FILOSOFIA_DO_AUTOR LIKE %s
+                ORDER BY NOME
+                """,
+                (f"%{busca}%", f"%{busca}%")
+            )
+        else:
+            cursor.execute(
+                """
+                SELECT ID_AUTOR, NOME, FILOSOFIA_DO_AUTOR,
+                       DATA_NASCIMENTO
+                FROM autor
+                ORDER BY NOME
+                """
+            )
+
+        autores = cursor.fetchall()
+
+        return render_template(
+            "autores.html",
+            autores=autores,
+            busca=busca
+        )
+
+    except Exception:
+        app.logger.exception("Erro ao consultar os autores.")
+        return "Ocorreu um erro ao consultar os autores.", 500
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+
+@app.route("/autores/cadastrar", methods=["GET", "POST"])
+def cadastrar_autor():
+    hoje = date.today().isoformat()
+
+    if request.method == "GET":
+        return render_template(
+            "cadastrar_autor.html",
+            hoje=hoje
+        )
+
+    nome = request.form.get("nome", "").strip()
+    filosofia = request.form.get("filosofia", "").strip()
+    data_nascimento = request.form.get(
+        "data_nascimento", ""
+    ).strip()
+
+    dados = {
+        "nome": nome,
+        "filosofia": filosofia,
+        "data_nascimento": data_nascimento,
+        "hoje": hoje
+    }
+
+    if not nome or not filosofia or not data_nascimento:
+        flash("Preencha todos os campos do formulário.", "erro")
+        return render_template(
+            "cadastrar_autor.html",
+            **dados
+        ), 400
+
+    if len(nome) > 45:
+        flash("O nome deve ter no máximo 45 caracteres.", "erro")
+        return render_template(
+            "cadastrar_autor.html",
+            **dados
+        ), 400
+
+    if len(filosofia) > 100:
+        flash(
+            "A filosofia do autor deve ter no máximo 100 caracteres.",
+            "erro"
+        )
+        return render_template(
+            "cadastrar_autor.html",
+            **dados
+        ), 400
+
+    try:
+        nascimento = date.fromisoformat(data_nascimento)
+
+        if nascimento > date.today():
+            flash(
+                "A data de nascimento não pode ser futura.",
+                "erro"
+            )
+            return render_template(
+                "cadastrar_autor.html",
+                **dados
+            ), 400
+
+    except ValueError:
+        flash("Informe uma data de nascimento válida.", "erro")
+        return render_template(
+            "cadastrar_autor.html",
+            **dados
+        ), 400
+
+    conexao = conectar()
+
+    if conexao is None:
+        return "Não foi possível conectar ao banco de dados.", 500
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            """
+            INSERT INTO autor
+                (NOME, FILOSOFIA_DO_AUTOR, DATA_NASCIMENTO)
+            VALUES (%s, %s, %s)
+            """,
+            (nome, filosofia, nascimento)
+        )
+
+        conexao.commit()
+        flash("Autor cadastrado com sucesso!", "sucesso")
+
+        return redirect(url_for("listar_autores"))
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro ao cadastrar o autor.")
+        flash("Não foi possível cadastrar o autor.", "erro")
+
+        return render_template(
+            "cadastrar_autor.html",
+            **dados
+        ), 400
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
 
 
 if __name__ == "__main__":

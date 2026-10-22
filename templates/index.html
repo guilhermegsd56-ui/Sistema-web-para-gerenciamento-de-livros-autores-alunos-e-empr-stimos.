@@ -19,7 +19,7 @@
 
         <nav aria-label="Navegação principal">
             <a href="{{ url_for('listar_livros') }}">Livros</a>
-            <a href="#autores">Autores</a>
+            <a href="{{ url_for('listar_autores') }}">Autores</a>
             <a href="#alunos">Alunos</a>
             <a href="#emprestimos">Empréstimos</a>
         </nav>
@@ -54,10 +54,10 @@
                 <span class="seta">↗</span>
             </a>
 
-            <a href="#autores" class="atalho" id="autores">
+            <a href="{{ url_for('listar_autores') }}" class="atalho">
                 <span class="numero">02</span>
                 <h3>Autores</h3>
-                <p>Consulte os autores das obras.</p>
+                <p>Consulte e cadastre os autores das obras.</p>
                 <span class="seta">↗</span>
             </a>
 

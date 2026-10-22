@@ -1,0 +1,198 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autores | Biblioteca Inteligente</title>
+
+    <style>
+        :root {
+            --fundo: #11120D;
+            --secundaria: #565449;
+            --detalhe: #D8CFBC;
+            --texto: #FFFBF4;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 40px 20px;
+            background: var(--fundo);
+            color: var(--texto);
+            font-family: Arial, sans-serif;
+        }
+
+        main { max-width: 1100px; margin: auto; }
+
+        a { color: var(--detalhe); text-decoration: none; }
+
+        .voltar { display: inline-block; margin-bottom: 24px; }
+
+        h1 { color: var(--detalhe); margin-bottom: 8px; }
+
+        .descricao, .resultado { color: #c5c2b8; }
+
+        .mensagem {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .sucesso { background: #243c2b; color: #d8f5dc; }
+        .erro { background: #492626; color: #ffdddd; }
+
+        .botao, .pesquisa button {
+            display: inline-block;
+            padding: 12px 17px;
+            border: none;
+            border-radius: 8px;
+            background: var(--detalhe);
+            color: var(--fundo);
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .botao-cadastrar { margin: 16px 0 24px; }
+
+        .pesquisa {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .pesquisa input {
+            flex: 1;
+            min-width: 200px;
+            padding: 13px;
+            border: 1px solid var(--secundaria);
+            border-radius: 8px;
+            background: #1b1c16;
+            color: var(--texto);
+        }
+
+        .limpar { display: inline-flex; align-items: center; }
+
+        .tabela-container {
+            overflow-x: auto;
+            border: 1px solid var(--secundaria);
+            border-radius: 12px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1b1c16;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--secundaria);
+        }
+
+        th { background: var(--secundaria); }
+        tr:last-child td { border-bottom: none; }
+
+        .vazio {
+            padding: 24px;
+            text-align: center;
+            color: var(--detalhe);
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 24px 14px; }
+        }
+    </style>
+</head>
+
+<body>
+<main>
+    <a class="voltar" href="{{ url_for('inicio') }}">
+        ← Voltar ao início
+    </a>
+
+    <h1>Autores</h1>
+    <p class="descricao">
+        Consulte, pesquise e cadastre os autores da biblioteca.
+    </p>
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% for categoria, mensagem in mensagens %}
+            <p class="mensagem {{ categoria }}">{{ mensagem }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <a class="botao botao-cadastrar"
+       href="{{ url_for('cadastrar_autor') }}">
+        + Cadastrar autor
+    </a>
+
+    <form class="pesquisa" method="GET"
+          action="{{ url_for('listar_autores') }}">
+        <input
+            type="search"
+            name="busca"
+            placeholder="Pesquisar por nome ou filosofia..."
+            value="{{ busca }}"
+            aria-label="Pesquisar autores"
+        >
+
+        <button type="submit">Pesquisar</button>
+
+        {% if busca %}
+            <a class="limpar" href="{{ url_for('listar_autores') }}">
+                Limpar busca
+            </a>
+        {% endif %}
+    </form>
+
+    <p class="resultado">
+        {% if busca %}
+            {{ autores|length }} resultado(s) para "{{ busca }}".
+        {% else %}
+            {{ autores|length }} autor(es) cadastrado(s).
+        {% endif %}
+    </p>
+
+    <div class="tabela-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nome</th>
+                    <th>Filosofia do autor</th>
+                    <th>Data de nascimento</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for autor in autores %}
+                <tr>
+                    <td>{{ autor.ID_AUTOR }}</td>
+                    <td>{{ autor.NOME }}</td>
+                    <td>{{ autor.FILOSOFIA_DO_AUTOR }}</td>
+                    <td>
+                        {{ autor.DATA_NASCIMENTO.strftime('%d/%m/%Y')
+                           if autor.DATA_NASCIMENTO else '—' }}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="vazio">
+                        {% if busca %}
+                            Nenhum autor encontrado para essa pesquisa.
+                        {% else %}
+                            Nenhum autor cadastrado.
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+</body>
+</html>
