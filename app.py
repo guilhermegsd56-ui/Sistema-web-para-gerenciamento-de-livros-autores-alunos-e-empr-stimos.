@@ -22,9 +22,84 @@ app.secret_key = os.environ.get(
 )
 
 
+# ==================================================
+# PAINEL INICIAL
+# ==================================================
+
+
 @app.route("/")
 def inicio():
-    return render_template("index.html")
+    conexao = conectar()
+
+    if conexao is None:
+        flash("Não foi possível conectar ao banco de dados.", "erro")
+        return render_template(
+            "index.html",
+            total_livros=0,
+            total_autores=0,
+            total_alunos=0,
+            total_emprestimos=0,
+            emprestimos_pendentes=0,
+            emprestimos_devolvidos=0
+        )
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor()
+
+        cursor.execute("SELECT COUNT(*) FROM livros")
+        total_livros = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM autor")
+        total_autores = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM aluno")
+        total_alunos = cursor.fetchone()[0]
+
+        cursor.execute("SELECT COUNT(*) FROM emprestrimo")
+        total_emprestimos = cursor.fetchone()[0]
+
+        cursor.execute(
+            "SELECT COUNT(*) FROM emprestrimo WHERE STATUS = %s",
+            ("PENDENTE",)
+        )
+        emprestimos_pendentes = cursor.fetchone()[0]
+
+        cursor.execute(
+            "SELECT COUNT(*) FROM emprestrimo WHERE STATUS = %s",
+            ("DEVOLVIDO",)
+        )
+        emprestimos_devolvidos = cursor.fetchone()[0]
+
+        return render_template(
+            "index.html",
+            total_livros=total_livros,
+            total_autores=total_autores,
+            total_alunos=total_alunos,
+            total_emprestimos=total_emprestimos,
+            emprestimos_pendentes=emprestimos_pendentes,
+            emprestimos_devolvidos=emprestimos_devolvidos
+        )
+
+    except Error as erro:
+        print(f"Erro ao carregar o painel: {erro}")
+        flash("Não foi possível carregar os indicadores.", "erro")
+        return render_template(
+            "index.html",
+            total_livros=0,
+            total_autores=0,
+            total_alunos=0,
+            total_emprestimos=0,
+            emprestimos_pendentes=0,
+            emprestimos_devolvidos=0
+        )
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
 
 
 # ==================================================
@@ -918,11 +993,6 @@ def excluir_aluno(id_aluno):
 
 
 # ==================================================
-# EXECUTAR A APLICAÇÃO
-# ==================================================
-
-
-# ==================================================
 # EMPRÉSTIMOS
 # ==================================================
 
@@ -1216,6 +1286,10 @@ def devolver_emprestimo(id_emprestimo):
 
     return redirect(url_for("listar_emprestimos"))
 
+
+# ==================================================
+# EXECUTAR A APLICAÇÃO
+# ==================================================
 
 if __name__ == "__main__":
     app.run(port=5001, debug=True)
