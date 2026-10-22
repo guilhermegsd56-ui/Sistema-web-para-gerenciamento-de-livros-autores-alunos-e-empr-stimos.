@@ -9,6 +9,7 @@ from flask import (
     abort
 )
 from database import conectar
+from mysql.connector import Error
 from datetime import date
 import os
 import secrets
@@ -97,7 +98,10 @@ def cadastrar_livro():
         ), 400
 
     if len(titulo) > 45 or len(autor) > 45:
-        flash("Título e autor devem ter no máximo 45 caracteres.", "erro")
+        flash(
+            "Título e autor devem ter no máximo 45 caracteres.",
+            "erro"
+        )
         return render_template(
             "cadastrar_livro.html",
             titulo=titulo,
@@ -206,7 +210,10 @@ def editar_livro(id_livro):
             ), 400
 
         if len(titulo) > 45 or len(autor) > 45:
-            flash("Título e autor devem ter no máximo 45 caracteres.", "erro")
+            flash(
+                "Título e autor devem ter no máximo 45 caracteres.",
+                "erro"
+            )
             livro.update({
                 "TITULO": titulo,
                 "AUTOR": autor,
@@ -260,6 +267,58 @@ def editar_livro(id_livro):
         if cursor is not None:
             cursor.close()
         conexao.close()
+
+
+@app.route("/livros/excluir/<int:id_livro>", methods=["POST"])
+def excluir_livro(id_livro):
+    conexao = conectar()
+
+    if conexao is None:
+        flash("Não foi possível conectar ao banco de dados.", "erro")
+        return redirect(url_for("listar_livros"))
+
+    cursor = None
+
+    try:
+        cursor = conexao.cursor()
+
+        cursor.execute(
+            "DELETE FROM livros WHERE ID_LIVRO = %s",
+            (id_livro,)
+        )
+
+        if cursor.rowcount == 0:
+            conexao.rollback()
+            flash("O livro não foi encontrado.", "erro")
+        else:
+            conexao.commit()
+            flash("Livro excluído com sucesso!", "sucesso")
+
+    except Error as erro:
+        conexao.rollback()
+        app.logger.exception("Erro ao excluir o livro.")
+
+        if getattr(erro, "errno", None) == 1451:
+            flash(
+                "Este livro possui registros vinculados, possivelmente "
+                "empréstimos. Não é possível excluí-lo enquanto esses "
+                "vínculos existirem.",
+                "erro"
+            )
+        else:
+            flash("Não foi possível excluir o livro.", "erro")
+
+    except Exception:
+        conexao.rollback()
+        app.logger.exception("Erro inesperado ao excluir o livro.")
+        flash("Ocorreu um erro inesperado ao excluir o livro.", "erro")
+
+    finally:
+        if cursor is not None:
+            cursor.close()
+        conexao.close()
+
+    return redirect(url_for("listar_livros"))
 
 
 if __name__ == "__main__":
