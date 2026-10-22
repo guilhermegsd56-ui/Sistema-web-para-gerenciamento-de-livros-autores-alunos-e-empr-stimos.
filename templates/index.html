@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Biblioteca Inteligente</title>
 
     <style>
@@ -303,6 +304,7 @@
 
     <section>
         <h2 class="secao-titulo">Visão geral</h2>
+
         <p class="secao-descricao">
             Acompanhe os principais números da sua biblioteca.
         </p>
@@ -394,9 +396,9 @@
                     Consulte os autores cadastrados, registre novos nomes
                     e mantenha suas informações organizadas.
                 </p>
-                <a class="botao" href="{{ url_for('listar_emprestimos') }}">
-    Gerenciar empréstimos
-</a>
+                <a class="botao" href="{{ url_for('listar_autores') }}">
+                    Gerenciar autores
+                </a>
             </article>
 
             <article class="cartao">
@@ -418,7 +420,7 @@
                     Registre empréstimos de livros, consulte os alunos
                     responsáveis e acompanhe as devoluções.
                 </p>
-                <a class="botao" href="/emprestimos">
+                <a class="botao" href="{{ url_for('listar_emprestimos') }}">
                     Gerenciar empréstimos
                 </a>
             </article>

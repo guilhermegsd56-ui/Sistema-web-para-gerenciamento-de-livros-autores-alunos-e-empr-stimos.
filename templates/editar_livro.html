@@ -127,8 +127,7 @@
             id="ano_publicacao"
             name="ano_publicacao"
             required
-            value="{{ livro.ANO_PUBLICACAO.strftime('%Y-%m-%d')
-                     if livro.ANO_PUBLICACAO else '' }}"
+            value="{{ livro.ANO_PUBLICACAO.strftime('%Y-%m-%d') if livro.ANO_PUBLICACAO is not string and livro.ANO_PUBLICACAO else (livro.ANO_PUBLICACAO if livro.ANO_PUBLICACAO else '') }}"
         >
 
         <label for="autor">Autor</label>

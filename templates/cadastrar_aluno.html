@@ -1,0 +1,139 @@
+```html
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Cadastrar Aluno | Biblioteca Inteligente</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <style>
+        .formulario-container {
+            max-width: 600px;
+            margin: 40px auto;
+            padding: 30px;
+            background: #FFFBF4;
+            border-radius: 12px;
+            color: #11120D;
+        }
+
+        .formulario-container h1 {
+            margin-bottom: 10px;
+        }
+
+        .formulario-container p {
+            margin-bottom: 25px;
+            color: #565449;
+        }
+
+        .campo {
+            margin-bottom: 20px;
+        }
+
+        .campo label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .campo input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #D8CFBC;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        .acoes {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 25px;
+        }
+
+        .botao-formulario {
+            display: inline-block;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #11120D;
+            color: #FFFBF4;
+            text-decoration: none;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .botao-voltar {
+            background: #565449;
+        }
+
+        .mensagem-erro {
+            margin-bottom: 20px;
+            padding: 12px;
+            border-radius: 6px;
+            background: #f8dddd;
+            color: #842029;
+        }
+    </style>
+</head>
+
+<body>
+
+    <main class="formulario-container">
+        <h1>Cadastrar aluno</h1>
+        <p>Preencha os dados para adicionar um aluno à biblioteca.</p>
+
+        {% with mensagens = get_flashed_messages(with_categories=true) %}
+            {% if mensagens %}
+                {% for categoria, mensagem in mensagens %}
+                    <div class="mensagem-erro">
+                        {{ mensagem }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('cadastrar_aluno') }}">
+            <div class="campo">
+                <label for="nome">Nome completo</label>
+                <input
+                    type="text"
+                    id="nome"
+                    name="nome"
+                    maxlength="45"
+                    value="{{ nome|default('') }}"
+                    required
+                >
+            </div>
+
+            <div class="campo">
+                <label for="data_nascimento">Data de nascimento</label>
+                <input
+                    type="date"
+                    id="data_nascimento"
+                    name="data_nascimento"
+                    max="{{ hoje }}"
+                    value="{{ data_nascimento|default('') }}"
+                    required
+                >
+            </div>
+
+            <div class="acoes">
+                <button type="submit" class="botao-formulario">
+                    Cadastrar aluno
+                </button>
+
+                <a href="{{ url_for('listar_alunos') }}"
+                   class="botao-formulario botao-voltar">
+                    Voltar
+                </a>
+            </div>
+        </form>
+    </main>
+
+</body>
+</html>
+```

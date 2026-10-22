@@ -216,10 +216,15 @@
                             {{ emprestimo.NOME_ALUNO or
                                'Aluno não encontrado' }}
                         </td>
-                        <td>
-                            {{ emprestimo.TITULO_LIVRO or
-                               'Livro não informado (registro antigo)' }}
-                        </td>
+<td>
+    {% if emprestimo.TITULO_LIVRO %}
+        {{ emprestimo.TITULO_LIVRO }}
+    {% else %}
+        <span title="Este registro não possui um livro vinculado">
+            Livro não vinculado
+        </span>
+    {% endif %}
+</td>
                         <td>
                             {{ emprestimo.DATA_EMPRESTIMO.strftime('%d/%m/%Y') }}
                         </td>
